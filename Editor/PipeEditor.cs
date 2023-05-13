@@ -143,7 +143,7 @@ public class PipeEditor : Editor
             if (GUILayout.Button("Delete Selected Point"))
             {
                 Undo.RecordObject(_generator, "Deleted a Pipe");
-                _generator.Pipes[_selectedPipeIndex].RemoveAt(_selectedPointIndex);
+                _generator.Pipes[_selectedPipeIndex].Points.RemoveAt(_selectedPointIndex);
                 _generator.UpdateMesh();
                 _selectedPipeIndex = -1;
                 _selectedPointIndex = -1;
@@ -155,11 +155,11 @@ public class PipeEditor : Editor
             {
                 Undo.RecordObject(_generator, "Inserted a point");
                 var position = Vector3.zero;
-                if (_selectedPointIndex != _generator.Pipes[_selectedPipeIndex].Count - 1)
-                    position = _generator.Pipes[_selectedPipeIndex][_selectedPointIndex] + (_generator.Pipes[_selectedPipeIndex][_selectedPointIndex + 1] - _generator.Pipes[_selectedPipeIndex][_selectedPointIndex]) / 2;
+                if (_selectedPointIndex != _generator.Pipes[_selectedPipeIndex].Points.Count - 1)
+                    position = _generator.Pipes[_selectedPipeIndex].Points[_selectedPointIndex] + (_generator.Pipes[_selectedPipeIndex].Points[_selectedPointIndex + 1] - _generator.Pipes[_selectedPipeIndex].Points[_selectedPointIndex]) / 2;
                 else
-                    position = _generator.Pipes[_selectedPipeIndex][_selectedPointIndex] + Vector3.one;
-                _generator.Pipes[_selectedPipeIndex].Insert(_selectedPointIndex + 1, position);
+                    position = _generator.Pipes[_selectedPipeIndex].Points[_selectedPointIndex] + Vector3.one;
+                _generator.Pipes[_selectedPipeIndex].Points.Insert(_selectedPointIndex + 1, position);
                 _generator.UpdateMesh();
                 _selectedPointIndex = _selectedPointIndex + 1;
                 Repaint();
@@ -179,12 +179,12 @@ public class PipeEditor : Editor
 
     private void RegeneratePath()
     {
-        var pipesCopy = new List<List<Vector3>>(_generator.Pipes);
+        var pipesCopy = new List<Pipe>(_generator.Pipes);
         _generator.Pipes = new();
         _generator.UpdateMesh();
         foreach (var pipe in pipesCopy)
         {
-            _generator.Pipes.Add(PathCreator.Create(pipe[0], pipe[1] - pipe[0], pipe[^1], pipe[^2] - pipe[^1]));
+            _generator.AddPipe(PathCreator.Create(pipe.Points[0], pipe.Points[1] - pipe.Points[0], pipe.Points[^1], pipe.Points[^2] - pipe.Points[^1]));
             _generator.UpdateMesh();
         }
     }
@@ -221,23 +221,24 @@ public class PipeEditor : Editor
 
     private void HandleEdit(Event evt)
     {
+        Handles.matrix = _generator.transform.localToWorldMatrix;
+
         EditorGUI.BeginChangeCheck();
 
-        var pipesCopy = new List<List<Vector3>>();
+        var pipesCopy = new List<Pipe>(_generator.Pipes);
         for (int i = 0; i < _generator.Pipes.Count; i++)
         {
-            var pipePointsCopy = new List<Vector3>(_generator.Pipes[i]);
-            for (int j = 0; j < pipePointsCopy.Count; j++)
+            for (int j = 0; j < pipesCopy[i].Points.Count; j++)
             {
                 Handles.zTest = UnityEngine.Rendering.CompareFunction.LessEqual;
                 if (i == _selectedPipeIndex && j == _selectedPointIndex)
                 {
                     Handles.zTest = UnityEngine.Rendering.CompareFunction.Always;
-                    pipePointsCopy[j] = Handles.PositionHandle(pipePointsCopy[j], Quaternion.identity);
+                    pipesCopy[i].Points[j] = Handles.PositionHandle(pipesCopy[i].Points[j], Quaternion.identity);
                 }
                 else
                 {
-                    if (Handles.Button(pipePointsCopy[j], Quaternion.identity, _generator.Radius * 2.1f, _generator.Radius, Handles.SphereHandleCap))
+                    if (Handles.Button(pipesCopy[i].Points[j], Quaternion.identity, _generator.Radius * 2.1f, _generator.Radius, Handles.SphereHandleCap))
                     {
                         _selectedPipeIndex = i;
                         _selectedPointIndex = j;
@@ -245,7 +246,6 @@ public class PipeEditor : Editor
                     }
                 }
             }
-            pipesCopy.Add(pipePointsCopy);
         }
 
         if (EditorGUI.EndChangeCheck())

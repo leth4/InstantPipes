@@ -39,7 +39,7 @@ public class PipeGenerator : MonoBehaviour
     private float _currentAngleOffset;
     private Quaternion _previousRotation;
 
-    public List<List<Vector3>> Pipes = new();
+    public List<Pipe> Pipes = new();
 
     private float _maxDistanceBetweenPointsSquared;
     public float MaxCurvature => Mathf.Sqrt(_maxDistanceBetweenPointsSquared) / 2;
@@ -56,7 +56,7 @@ public class PipeGenerator : MonoBehaviour
 
     public void AddPipe(List<Vector3> points)
     {
-        Pipes.Add(points);
+        Pipes.Add(new Pipe(points));
     }
 
     public void UpdateMesh()
@@ -69,7 +69,7 @@ public class PipeGenerator : MonoBehaviour
         foreach (var pipe in Pipes)
         {
             _mesh.Clear();
-            Points = pipe;
+            Points = pipe.Points;
             CheckMaxDistance();
             var instance = new CombineInstance { mesh = GeneratePipe() };
             submeshes.Add(instance);
@@ -357,5 +357,12 @@ public class PipeGenerator : MonoBehaviour
         public Vector3 LocalToWorldPosition(Vector3 localSpacePos) => Rot * localSpacePos + Pos;
         public Vector3 LocalToWorldVector(Vector3 localSpacePos) => Rot * localSpacePos;
     }
+}
 
+[System.Serializable]
+public struct Pipe
+{
+    public List<Vector3> Points;
+
+    public Pipe(List<Vector3> points) => Points = points;
 }

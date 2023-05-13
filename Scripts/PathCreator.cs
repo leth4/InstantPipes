@@ -69,6 +69,8 @@ public static class PathCreator
 
         int iterations = 0;
 
+        Dictionary<Vector3, Point> pointDictionary = new();
+
         while (toSearch.Count > 0 && iterations < 1000)
         {
             iterations++;
@@ -76,20 +78,8 @@ public static class PathCreator
             foreach (var t in toSearch)
                 if (t.F < current.F || t.F == current.F && t.H < current.H) current = t;
 
-            if (visited.Contains(current.Position))
-            {
-                // Temporary solution
-
-                toSearch.Remove(current);
-                iterations--;
-                continue;
-            }
-
-
             visited.Add(current.Position);
             toSearch.Remove(current);
-
-            Dictionary<Vector3, Point> pointDictionary = new();
 
             if (Vector3.Distance(current.Position, target.Position) <= GridSize)
             {
@@ -127,12 +117,7 @@ public static class PathCreator
 
                 costToNeighbor += Random.Range(-Chaos, Chaos);
 
-                // TEMPORARY! VERY SLOW!
-
                 costToNeighbor += neighbor.GetDistanceToNearestObstacle() / 20 * NearObstaclesPriority;
-
-                // if (neighbor.GetNeighbors().Count < 6)
-                //     costToNeighbor /= Mathf.Pow(2, NearObstaclesPriority);
 
                 if (!toSearch.Contains(neighbor) || costToNeighbor < neighbor.G)
                 {
@@ -152,7 +137,6 @@ public static class PathCreator
     }
 
 }
-
 
 public class Point
 {

@@ -4,11 +4,6 @@ A procedural pipe generator with pathfinding
 
 ## TODO
 
-### Pathfinding
-
-- [ ] Remove temporary solutions
-- [ ] Allow removing all extra lines by raycasting a sphere to next points
-
 ### Editing
 
 - [ ] Better moving handles
