@@ -5,11 +5,13 @@ public static class PathCreator
 {
     public static float Height = 5;
     public static float Radius;
-
     public static float GridSize = 3;
+
     public static float Chaos = 0;
-    public static int StraightPathPriority = 0;
-    public static int NearObstaclesPriority = 0;
+    public static float StraightPathPriority = 10;
+    public static float NearObstaclesPriority = 0;
+
+    public static bool LastPathSuccess = true;
 
     public static List<Vector3> Create(Vector3 startPosition, Vector3 startNormal, Vector3 endPosition, Vector3 endNormal)
     {
@@ -21,10 +23,12 @@ public static class PathCreator
         Point startPoint = new(pathStart);
         Point endPoint = new(pathEnd);
 
-        var extraPoints = FindPath(endPoint, startPoint);
+        var extraPoints = FindPath(startPoint, endPoint, startNormal.normalized);
 
         path.Add(startPosition);
         path.Add(startPoint.Position);
+
+        LastPathSuccess = true;
 
         if (extraPoints != null)
         {
@@ -35,7 +39,7 @@ public static class PathCreator
         }
         else
         {
-            Debug.Log($"Can't find a path!");
+            LastPathSuccess = false;
         }
 
         RemoveExtra(path);
@@ -58,7 +62,7 @@ public static class PathCreator
         }
     }
 
-    private static List<Point> FindPath(Point start, Point target)
+    private static List<Point> FindPath(Point start, Point target, Vector3 startNormal)
     {
         var toSearch = new List<Point> { start };
         var visited = new List<Vector3>();
@@ -74,12 +78,13 @@ public static class PathCreator
 
             if (visited.Contains(current.Position))
             {
+                // Temporary solution
+
                 toSearch.Remove(current);
                 iterations--;
                 continue;
             }
 
-            // Temporary solution
 
             visited.Add(current.Position);
             toSearch.Remove(current);
@@ -95,6 +100,7 @@ public static class PathCreator
                     path.Add(currentPathTile);
                     currentPathTile = currentPathTile.Connection;
                 }
+                path.Reverse();
                 return path;
             }
 
@@ -113,15 +119,20 @@ public static class PathCreator
                 if (visited.Contains(neighbor.Position)) continue;
 
                 var costToNeighbor = current.G + 1;
-                if (current.Connection != null && (current.Connection.Position - current.Position).normalized == (current.Connection.Position - neighbor.Position).normalized)
-                    costToNeighbor -= StraightPathPriority;
 
-                costToNeighbor += UnityEngine.Random.Range(0, Chaos);
+                if (current.Connection != null && (current.Connection.Position - current.Position).normalized != (current.Connection.Position - neighbor.Position).normalized)
+                {
+                    costToNeighbor += StraightPathPriority;
+                }
+
+                costToNeighbor += Random.Range(-Chaos, Chaos);
 
                 // TEMPORARY! VERY SLOW!
 
-                if (neighbor.GetNeighbors().Count < 6)
-                    costToNeighbor -= NearObstaclesPriority;
+                costToNeighbor += neighbor.GetDistanceToNearestObstacle() / 20 * NearObstaclesPriority;
+
+                // if (neighbor.GetNeighbors().Count < 6)
+                //     costToNeighbor /= Mathf.Pow(2, NearObstaclesPriority);
 
                 if (!toSearch.Contains(neighbor) || costToNeighbor < neighbor.G)
                 {
@@ -165,10 +176,24 @@ public class Point
         return distance * 10;
     }
 
+    public float GetDistanceToNearestObstacle()
+    {
+        float minDistance = 999;
+        RaycastHit hitPoint;
+        if (Physics.Raycast(Position, Vector3.up, out hitPoint, 200) && hitPoint.distance < minDistance) minDistance = hitPoint.distance;
+        if (Physics.Raycast(Position, Vector3.down, out hitPoint, 200) && hitPoint.distance < minDistance) minDistance = hitPoint.distance;
+        if (Physics.Raycast(Position, Vector3.left, out hitPoint, 200) && hitPoint.distance < minDistance) minDistance = hitPoint.distance;
+        if (Physics.Raycast(Position, Vector3.right, out hitPoint, 200) && hitPoint.distance < minDistance) minDistance = hitPoint.distance;
+        if (Physics.Raycast(Position, Vector3.forward, out hitPoint, 200) && hitPoint.distance < minDistance) minDistance = hitPoint.distance;
+        if (Physics.Raycast(Position, Vector3.back, out hitPoint, 200) && hitPoint.distance < minDistance) minDistance = hitPoint.distance;
+        return minDistance;
+    }
+
     public List<Vector3> GetNeighbors()
     {
-        var radiusVector = new Vector3(PathCreator.Radius * 2, PathCreator.Radius * 2, PathCreator.Radius * 2);
         var step = PathCreator.GridSize;
+        // var radiusVector = new Vector3(PathCreator.Radius * 2, PathCreator.Radius * 2, PathCreator.Radius * 2);
+        var radiusVector = new Vector3(step, step, step);
         var list = new List<Vector3>();
 
         if (!Physics.CheckBox(Position + new Vector3(0, 0, step), radiusVector)) list.Add(Position + new Vector3(0, 0, step));

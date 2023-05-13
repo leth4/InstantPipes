@@ -6,9 +6,7 @@ A procedural pipe generator with pathfinding
 
 ### Pathfinding
 
-- [ ] Handle cases when can't find a path
 - [ ] Remove temporary solutions
-- [ ] Apply proper cost settings
 - [ ] Allow removing all extra lines by raycasting a sphere to next points
 
 ### Editing

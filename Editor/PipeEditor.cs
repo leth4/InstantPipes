@@ -17,7 +17,6 @@ public class PipeEditor : Editor
     private int _selectedPipeIndex = -1;
     private int _selectedPointIndex = -1;
 
-
     private void OnEnable()
     {
         _generator = (PipeGenerator)target;
@@ -99,12 +98,17 @@ public class PipeEditor : Editor
             var pathHeight = EditorGUILayout.FloatField("Height", PathCreator.Height);
             var pathGridSize = EditorGUILayout.FloatField("Grid Size", PathCreator.GridSize);
             var chaos = EditorGUILayout.FloatField("Chaos", PathCreator.Chaos);
-            var straightPriority = EditorGUILayout.IntField("Straight Priority", PathCreator.StraightPathPriority);
-            var nearObstaclePriority = EditorGUILayout.IntField("Near Obstacle Priority", PathCreator.NearObstaclesPriority);
+            var straightPriority = EditorGUILayout.FloatField("Straight Proirity", PathCreator.StraightPathPriority);
+            var nearObstaclePriority = EditorGUILayout.FloatField("Near Obstacle Proirity", PathCreator.NearObstaclesPriority);
 
             if (GUILayout.Button("Regenerate"))
             {
                 RegeneratePath();
+            }
+
+            if (!PathCreator.LastPathSuccess)
+            {
+                EditorGUILayout.HelpBox("Last path build insuccessful", MessageType.Warning);
             }
 
             if (EditorGUI.EndChangeCheck())
