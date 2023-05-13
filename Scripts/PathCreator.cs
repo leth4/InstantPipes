@@ -1,19 +1,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class PathCreator
+public class PathCreator
 {
-    public static float Height = 5;
-    public static float Radius;
-    public static float GridSize = 3;
+    public float Height = 5;
+    public float Radius;
+    public float GridSize = 3;
 
-    public static float Chaos = 0;
-    public static float StraightPathPriority = 10;
-    public static float NearObstaclesPriority = 0;
+    public float Chaos = 0;
+    public float StraightPathPriority = 10;
+    public float NearObstaclesPriority = 0;
 
-    public static bool LastPathSuccess = true;
+    public bool LastPathSuccess = true;
 
-    public static List<Vector3> Create(Vector3 startPosition, Vector3 startNormal, Vector3 endPosition, Vector3 endNormal)
+    public List<Vector3> Create(Vector3 startPosition, Vector3 startNormal, Vector3 endPosition, Vector3 endNormal)
     {
         var path = new List<Vector3>();
         var pathStart = startPosition + startNormal.normalized * Height;
@@ -50,7 +50,7 @@ public static class PathCreator
         return path;
     }
 
-    private static void RemoveExtra(List<Vector3> points)
+    private void RemoveExtra(List<Vector3> points)
     {
         for (int i = 0; i < points.Count - 2; i++)
         {
@@ -62,7 +62,7 @@ public static class PathCreator
         }
     }
 
-    private static List<Point> FindPath(Point start, Point target, Vector3 startNormal)
+    private List<Point> FindPath(Point start, Point target, Vector3 startNormal)
     {
         var toSearch = new List<Point> { start };
         var visited = new List<Vector3>();
@@ -94,7 +94,7 @@ public static class PathCreator
                 return path;
             }
 
-            var neighborPositions = current.GetNeighbors();
+            var neighborPositions = current.GetNeighbors(GridSize, Radius);
             foreach (var position in neighborPositions)
             {
                 if (!pointDictionary.ContainsKey(position))
@@ -173,9 +173,9 @@ public class Point
         return minDistance;
     }
 
-    public List<Vector3> GetNeighbors()
+    public List<Vector3> GetNeighbors(float gridSize, float radius)
     {
-        var step = PathCreator.GridSize;
+        var step = gridSize;
         // var radiusVector = new Vector3(PathCreator.Radius * 2, PathCreator.Radius * 2, PathCreator.Radius * 2);
         var radiusVector = new Vector3(step, step, step);
         var list = new List<Vector3>();

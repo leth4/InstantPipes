@@ -13,7 +13,6 @@ A procedural pipe generator with pathfinding
 ### Other
 
 - [ ] Refactor everything
-- [ ] Fix undo for inspector buttons
 - [ ] Multiple pipes at once
 - [ ] Selecting an area and filling it with pipes
 

@@ -95,18 +95,18 @@ public class PipeEditor : Editor
         if (_editingMode == 0)
         {
             EditorGUI.BeginChangeCheck();
-            var pathHeight = EditorGUILayout.FloatField("Height", PathCreator.Height);
-            var pathGridSize = EditorGUILayout.FloatField("Grid Size", PathCreator.GridSize);
-            var chaos = EditorGUILayout.FloatField("Chaos", PathCreator.Chaos);
-            var straightPriority = EditorGUILayout.FloatField("Straight Proirity", PathCreator.StraightPathPriority);
-            var nearObstaclePriority = EditorGUILayout.FloatField("Near Obstacle Proirity", PathCreator.NearObstaclesPriority);
+            var pathHeight = EditorGUILayout.FloatField("Height", _generator.PathCreator.Height);
+            var pathGridSize = EditorGUILayout.FloatField("Grid Size", _generator.PathCreator.GridSize);
+            var chaos = EditorGUILayout.FloatField("Chaos", _generator.PathCreator.Chaos);
+            var straightPriority = EditorGUILayout.FloatField("Straight Proirity", _generator.PathCreator.StraightPathPriority);
+            var nearObstaclePriority = EditorGUILayout.FloatField("Near Obstacle Proirity", _generator.PathCreator.NearObstaclesPriority);
 
             if (GUILayout.Button("Regenerate"))
             {
                 RegeneratePath();
             }
 
-            if (!PathCreator.LastPathSuccess)
+            if (!_generator.PathCreator.LastPathSuccess)
             {
                 EditorGUILayout.HelpBox("Last path build insuccessful", MessageType.Warning);
             }
@@ -115,12 +115,12 @@ public class PipeEditor : Editor
             {
                 Undo.RecordObject(_generator, "Set Field Value");
 
-                PathCreator.Radius = radius + (hasRings ? ringRadius : 0);
-                PathCreator.Height = pathHeight;
-                PathCreator.GridSize = pathGridSize;
-                PathCreator.StraightPathPriority = straightPriority;
-                PathCreator.NearObstaclesPriority = nearObstaclePriority;
-                PathCreator.Chaos = chaos;
+                _generator.PathCreator.Radius = radius + (hasRings ? ringRadius : 0);
+                _generator.PathCreator.Height = pathHeight;
+                _generator.PathCreator.GridSize = pathGridSize;
+                _generator.PathCreator.StraightPathPriority = straightPriority;
+                _generator.PathCreator.NearObstaclesPriority = nearObstaclePriority;
+                _generator.PathCreator.Chaos = chaos;
 
                 RegeneratePath();
                 _generator.UpdateMesh();
@@ -142,8 +142,8 @@ public class PipeEditor : Editor
             GUI.enabled = _selectedPipeIndex != -1 && _selectedPointIndex != -1;
             if (GUILayout.Button("Delete Selected Point"))
             {
-                Undo.RecordObject(_generator, "Deleted a Pipe");
-                _generator.Pipes[_selectedPipeIndex].Points.RemoveAt(_selectedPointIndex);
+                Undo.RecordObject(_generator, "Deleted a point");
+                _generator.Pipes[_selectedPipeIndex].Points.Remove(_generator.Pipes[_selectedPipeIndex].Points[_selectedPointIndex]);
                 _generator.UpdateMesh();
                 _selectedPipeIndex = -1;
                 _selectedPointIndex = -1;
@@ -184,7 +184,7 @@ public class PipeEditor : Editor
         _generator.UpdateMesh();
         foreach (var pipe in pipesCopy)
         {
-            _generator.AddPipe(PathCreator.Create(pipe.Points[0], pipe.Points[1] - pipe.Points[0], pipe.Points[^1], pipe.Points[^2] - pipe.Points[^1]));
+            _generator.AddPipe(_generator.PathCreator.Create(pipe.Points[0], pipe.Points[1] - pipe.Points[0], pipe.Points[^1], pipe.Points[^2] - pipe.Points[^1]));
             _generator.UpdateMesh();
         }
     }
@@ -223,22 +223,28 @@ public class PipeEditor : Editor
     {
         Handles.matrix = _generator.transform.localToWorldMatrix;
 
-        EditorGUI.BeginChangeCheck();
 
-        var pipesCopy = new List<Pipe>(_generator.Pipes);
         for (int i = 0; i < _generator.Pipes.Count; i++)
         {
-            for (int j = 0; j < pipesCopy[i].Points.Count; j++)
+            for (int j = 0; j < _generator.Pipes[i].Points.Count; j++)
             {
                 Handles.zTest = UnityEngine.Rendering.CompareFunction.LessEqual;
                 if (i == _selectedPipeIndex && j == _selectedPointIndex)
                 {
                     Handles.zTest = UnityEngine.Rendering.CompareFunction.Always;
-                    pipesCopy[i].Points[j] = Handles.PositionHandle(pipesCopy[i].Points[j], Quaternion.identity);
+
+                    EditorGUI.BeginChangeCheck();
+                    var position = Handles.PositionHandle(_generator.Pipes[i].Points[j], Quaternion.identity);
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        Undo.RecordObject(_generator, "Moved a point");
+                        _generator.Pipes[i].Points[j] = position;
+                        _generator.UpdateMesh();
+                    }
                 }
                 else
                 {
-                    if (Handles.Button(pipesCopy[i].Points[j], Quaternion.identity, _generator.Radius * 2.1f, _generator.Radius, Handles.SphereHandleCap))
+                    if (Handles.Button(_generator.Pipes[i].Points[j], Quaternion.identity, _generator.Radius * 2.1f, _generator.Radius, Handles.SphereHandleCap))
                     {
                         _selectedPipeIndex = i;
                         _selectedPointIndex = j;
@@ -248,13 +254,7 @@ public class PipeEditor : Editor
             }
         }
 
-        if (EditorGUI.EndChangeCheck())
-        {
-            Undo.RecordObject(_generator, "Moved a point");
-            _generator.Pipes.Clear();
-            _generator.Pipes.AddRange(pipesCopy);
-            _generator.UpdateMesh();
-        }
+
     }
 
     private void HandlePathInput(Event evt)
@@ -272,7 +272,7 @@ public class PipeEditor : Editor
             if (Vector3.Distance(_mouseHit.point, _startDragPoint) > 3)
             {
                 Undo.RecordObject(_generator, "Add Pipe");
-                _generator.AddPipe(PathCreator.Create(_startDragPoint, _startDragNormal, _mouseHit.point, _mouseHit.normal));
+                _generator.AddPipe(_generator.PathCreator.Create(_startDragPoint, _startDragNormal, _mouseHit.point, _mouseHit.normal));
                 _generator.UpdateMesh();
             }
         }
