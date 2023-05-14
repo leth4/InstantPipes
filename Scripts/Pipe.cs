@@ -21,7 +21,16 @@ public class Pipe
     public Pipe(List<Vector3> points)
     {
         Points = points;
+    }
 
+    public float GetMaxDistanceBetweenPoints()
+    {
+        float maxDistance = 0;
+        for (int i = 1; i < Points.Count; i++)
+        {
+            maxDistance = Mathf.Max(maxDistance, Vector3.Distance(Points[i], Points[i - 1]));
+        }
+        return maxDistance;
     }
 
     public Mesh GenerateMesh(PipeGenerator generator)

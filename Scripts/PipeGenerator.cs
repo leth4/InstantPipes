@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,34 +12,41 @@ public class PipeGenerator : MonoBehaviour
     public int CurvedSegmentCount = 10;
     public float Curvature = 0.5f;
 
+    public bool HasRings;
     public float RingThickness = 1;
     public float RingRadius = 1.3f;
 
+    public bool HasCaps;
     public float CapThickness = 1;
     public float CapRadius = 1.3f;
 
     public Material Material;
 
-    public bool HasRings;
-    public bool HasCaps;
-
-    private Mesh _mesh;
-
     private Renderer _renderer;
+    private MeshCollider _collider;
+    private Mesh _mesh;
 
     public List<Pipe> Pipes = new();
     public PathCreator PathCreator = new();
 
-    private float _maxDistanceBetweenPointsSquared;
-    public float MaxCurvature => Mathf.Sqrt(_maxDistanceBetweenPointsSquared) / 2;
+    private float _maxDistanceBetweenPoints;
+    public float MaxCurvature => _maxDistanceBetweenPoints / 2;
+
+    private void OnDrawGizmos()
+    {
+        foreach (var point in PathCreator.Points) Gizmos.DrawSphere(point, 0.1f);
+    }
 
     private void OnEnable()
     {
+        _renderer = GetComponent<Renderer>();
+        _collider = GetComponent<MeshCollider>();
+
         _mesh = new Mesh { name = "Pipes" };
         GetComponent<MeshFilter>().sharedMesh = _mesh;
-        GetComponent<MeshCollider>().sharedMesh = null;
-        GetComponent<MeshCollider>().sharedMesh = _mesh;
-        _renderer = GetComponent<Renderer>();
+        _collider.sharedMesh = null;
+        _collider.sharedMesh = _mesh;
+
         UpdateMesh();
     }
 
@@ -51,21 +57,22 @@ public class PipeGenerator : MonoBehaviour
 
     public void UpdateMesh()
     {
-        _mesh.Clear();
-        _maxDistanceBetweenPointsSquared = 0;
-        GetComponent<MeshCollider>().sharedMesh = null;
+        _maxDistanceBetweenPoints = 0;
+        _collider.sharedMesh = null;
 
         var submeshes = new List<CombineInstance>();
         foreach (var pipe in Pipes)
         {
             _mesh.Clear();
-            // CheckMaxDistance();
             var instance = new CombineInstance { mesh = pipe.GenerateMesh(this) };
             submeshes.Add(instance);
             _mesh.CombineMeshes(submeshes.ToArray(), false, false);
 
-            GetComponent<MeshCollider>().sharedMesh = null;
-            GetComponent<MeshCollider>().sharedMesh = _mesh;
+            _collider.sharedMesh = null;
+            _collider.sharedMesh = _mesh;
+
+            var maxDistance = pipe.GetMaxDistanceBetweenPoints();
+            _maxDistanceBetweenPoints = Mathf.Max(_maxDistanceBetweenPoints, maxDistance);
         }
 
         var materialArray = new Material[Pipes.Count];
@@ -73,13 +80,8 @@ public class PipeGenerator : MonoBehaviour
         _renderer.sharedMaterials = materialArray;
     }
 
-    // private void CheckMaxDistance()
-    // {
-    //     for (int i = 1; i < Points.Count; i++)
-    //     {
-    //         var sqrDist = (Points[i] - Points[i - 1]).sqrMagnitude;
-    //         if (sqrDist > _maxDistanceBetweenPointsSquared)
-    //             _maxDistanceBetweenPointsSquared = sqrDist;
-    //     }
-    // }
+    public void RemovePipe(int pipeIndex)
+    {
+
+    }
 }

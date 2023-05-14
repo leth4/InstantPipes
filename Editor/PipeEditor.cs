@@ -43,8 +43,8 @@ public class PipeEditor : Editor
         var radius = EditorGUILayout.FloatField("Radius", _generator.Radius);
         var curvature = EditorGUILayout.Slider("Curvature", _generator.Curvature, 0.2f, _generator.MaxCurvature);
         var material = (Material)EditorGUILayout.ObjectField("Material", _generator.Material, typeof(Material), false);
-
         EditorGUILayout.Space(10);
+
         GUILayout.Label("Quality", EditorStyles.boldLabel);
         var edgeCount = EditorGUILayout.IntSlider("Edges", _generator.EdgeCount, 3, 40);
         var segmentCount = EditorGUILayout.IntSlider("Segments", _generator.CurvedSegmentCount, 1, 40);
@@ -66,6 +66,7 @@ public class PipeEditor : Editor
             capRadius = EditorGUILayout.Slider("Radius", _generator.CapRadius, 0.05f, radius);
             capThickness = EditorGUILayout.Slider("Thickness", _generator.CapThickness, 0.1f, 1);
         }
+        EditorGUILayout.Space(10);
 
         if (EditorGUI.EndChangeCheck())
         {
@@ -73,30 +74,28 @@ public class PipeEditor : Editor
 
             _generator.Material = material;
             _generator.Radius = radius;
-            _generator.Curvature = Mathf.Abs(curvature);
-
+            _generator.Curvature = Mathf.Clamp(curvature, 0.2f, _generator.MaxCurvature);
             _generator.HasRings = hasRings;
-            _generator.RingRadius = ringRadius;
-            _generator.RingThickness = ringThickness;
-
+            _generator.RingRadius = Mathf.Clamp(ringRadius, 0.05f, radius);
+            _generator.RingThickness = Mathf.Clamp(ringThickness, 0.1f, 1);
             _generator.HasCaps = hasCaps;
-            _generator.CapRadius = capRadius;
-            _generator.CapThickness = capThickness;
-
+            _generator.CapRadius = Mathf.Clamp(capRadius, 0.05f, radius);
+            _generator.CapThickness = Mathf.Clamp(capThickness, 0.1f, 1);
             _generator.EdgeCount = edgeCount;
             _generator.CurvedSegmentCount = segmentCount;
+
+            _generator.PathCreator.Radius = radius + (hasRings ? ringRadius : 0);
             _generator.UpdateMesh();
         }
 
-        EditorGUILayout.Space(10);
         _editingMode = GUILayout.Toolbar(_editingMode, new string[] { "Edit path", "Edit by hand" });
         EditorGUILayout.Space(10);
 
         if (_editingMode == 0)
         {
             EditorGUI.BeginChangeCheck();
-            var pathHeight = EditorGUILayout.FloatField("Height", _generator.PathCreator.Height);
             var pathGridSize = EditorGUILayout.FloatField("Grid Size", _generator.PathCreator.GridSize);
+            var pathHeight = EditorGUILayout.FloatField("Height", _generator.PathCreator.Height);
             var chaos = EditorGUILayout.FloatField("Chaos", _generator.PathCreator.Chaos);
             var straightPriority = EditorGUILayout.FloatField("Straight Proirity", _generator.PathCreator.StraightPathPriority);
             var nearObstaclePriority = EditorGUILayout.FloatField("Near Obstacle Proirity", _generator.PathCreator.NearObstaclesPriority);
@@ -115,9 +114,8 @@ public class PipeEditor : Editor
             {
                 Undo.RecordObject(_generator, "Set Field Value");
 
-                _generator.PathCreator.Radius = radius + (hasRings ? ringRadius : 0);
-                _generator.PathCreator.Height = pathHeight;
-                _generator.PathCreator.GridSize = pathGridSize;
+                _generator.PathCreator.GridSize = Mathf.Clamp(pathGridSize, 0, Mathf.Infinity);
+                _generator.PathCreator.Height = Mathf.Clamp(pathHeight, pathGridSize, Mathf.Infinity);
                 _generator.PathCreator.StraightPathPriority = straightPriority;
                 _generator.PathCreator.NearObstaclesPriority = nearObstaclePriority;
                 _generator.PathCreator.Chaos = chaos;
@@ -228,7 +226,6 @@ public class PipeEditor : Editor
         {
             for (int j = 0; j < _generator.Pipes[i].Points.Count; j++)
             {
-                Handles.zTest = UnityEngine.Rendering.CompareFunction.LessEqual;
                 if (i == _selectedPipeIndex && j == _selectedPointIndex)
                 {
                     Handles.zTest = UnityEngine.Rendering.CompareFunction.Always;
@@ -244,7 +241,11 @@ public class PipeEditor : Editor
                 }
                 else
                 {
-                    if (Handles.Button(_generator.Pipes[i].Points[j], Quaternion.identity, _generator.Radius * 2.1f, _generator.Radius, Handles.SphereHandleCap))
+                    if (j != 0)
+                    {
+                        Handles.DrawLine(_generator.Pipes[i].Points[j], _generator.Pipes[i].Points[j - 1]);
+                    }
+                    if (Handles.Button(_generator.Pipes[i].Points[j], Quaternion.identity, 0.8f, 2f, Handles.SphereHandleCap))
                     {
                         _selectedPipeIndex = i;
                         _selectedPointIndex = j;
