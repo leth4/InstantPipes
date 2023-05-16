@@ -4,23 +4,20 @@ A procedural pipe generator with pathfinding
 
 ## TODO
 
-### Bugs
-
-- [ ] Height should also take points
-- [ ] Sometimes goes through visited!
-- [ ] Big grid size: ignores collisions completely
-
 ### Pathfinding
 
+- [ ] Height should also take points. build height manually.
 - [ ] Handle edge cases, so there's always some path to be found.
-- [ ] Grid doesn't work perfectly. Radius or grid for pathfinding?
+- [ ] Iterations slider
 
-### Other
+### Bugs
 
-- [ ] Refactor everything
+- [ ] Fix Quaternion error
+
+### Features
+
 - [ ] Multiple pipes at once
 - [ ] Selecting an area and filling it with pipes
-- [ ] Grid size less then radius
 
 ### Readme
 

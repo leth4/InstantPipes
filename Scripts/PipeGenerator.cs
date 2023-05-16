@@ -34,7 +34,16 @@ public class PipeGenerator : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        foreach (var point in PathCreator.Points) Gizmos.DrawSphere(point, 0.1f);
+        var maxDistance = 0f;
+        foreach (var dist in PathCreator.Distances)
+        {
+            maxDistance = Mathf.Max(maxDistance, dist);
+        }
+        for (int i = 0; i < PathCreator.Points.Count; i++)
+        {
+            Gizmos.color = Color.Lerp(Color.red, Color.white, PathCreator.Distances[i] / maxDistance);
+            Gizmos.DrawSphere(PathCreator.Points[i], 0.1f);
+        }
     }
 
     private void OnEnable()
@@ -44,7 +53,6 @@ public class PipeGenerator : MonoBehaviour
 
         _mesh = new Mesh { name = "Pipes" };
         GetComponent<MeshFilter>().sharedMesh = _mesh;
-        _collider.sharedMesh = null;
         _collider.sharedMesh = _mesh;
 
         UpdateMesh();
@@ -64,24 +72,17 @@ public class PipeGenerator : MonoBehaviour
         foreach (var pipe in Pipes)
         {
             _mesh.Clear();
-            var instance = new CombineInstance { mesh = pipe.GenerateMesh(this) };
-            submeshes.Add(instance);
+
+            submeshes.Add(new() { mesh = pipe.GenerateMesh(this) });
             _mesh.CombineMeshes(submeshes.ToArray(), false, false);
 
-            _collider.sharedMesh = null;
             _collider.sharedMesh = _mesh;
 
-            var maxDistance = pipe.GetMaxDistanceBetweenPoints();
-            _maxDistanceBetweenPoints = Mathf.Max(_maxDistanceBetweenPoints, maxDistance);
+            _maxDistanceBetweenPoints = Mathf.Max(_maxDistanceBetweenPoints, pipe.GetMaxDistanceBetweenPoints());
         }
 
         var materialArray = new Material[Pipes.Count];
         for (int i = 0; i < materialArray.Length; i++) materialArray[i] = Material;
         _renderer.sharedMaterials = materialArray;
-    }
-
-    public void RemovePipe(int pipeIndex)
-    {
-
     }
 }

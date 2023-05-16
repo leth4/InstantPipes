@@ -93,76 +93,12 @@ public class PipeEditor : Editor
 
         if (_editingMode == 0)
         {
-            EditorGUI.BeginChangeCheck();
-            var pathGridSize = EditorGUILayout.FloatField("Grid Size", _generator.PathCreator.GridSize);
-            var pathHeight = EditorGUILayout.FloatField("Height", _generator.PathCreator.Height);
-            var chaos = EditorGUILayout.FloatField("Chaos", _generator.PathCreator.Chaos);
-            var straightPriority = EditorGUILayout.FloatField("Straight Proirity", _generator.PathCreator.StraightPathPriority);
-            var nearObstaclePriority = EditorGUILayout.FloatField("Near Obstacle Proirity", _generator.PathCreator.NearObstaclesPriority);
-
-            if (GUILayout.Button("Regenerate"))
-            {
-                RegeneratePath();
-            }
-
-            if (!_generator.PathCreator.LastPathSuccess)
-            {
-                EditorGUILayout.HelpBox("Last path build insuccessful", MessageType.Warning);
-            }
-
-            if (EditorGUI.EndChangeCheck())
-            {
-                Undo.RecordObject(_generator, "Set Field Value");
-
-                _generator.PathCreator.GridSize = Mathf.Clamp(pathGridSize, 0, Mathf.Infinity);
-                _generator.PathCreator.Height = Mathf.Clamp(pathHeight, pathGridSize, Mathf.Infinity);
-                _generator.PathCreator.StraightPathPriority = straightPriority;
-                _generator.PathCreator.NearObstaclesPriority = nearObstaclePriority;
-                _generator.PathCreator.Chaos = chaos;
-
-                RegeneratePath();
-                _generator.UpdateMesh();
-            }
+            EditPathGUI();
         }
 
         if (_editingMode == 1)
         {
-            GUI.enabled = _selectedPipeIndex != -1;
-            if (GUILayout.Button("Delete Selected Pipe"))
-            {
-                Undo.RecordObject(_generator, "Deleted a Pipe");
-                _generator.Pipes.RemoveAt(_selectedPipeIndex);
-                _generator.UpdateMesh();
-                _selectedPipeIndex = -1;
-            }
-            GUI.enabled = true;
-
-            GUI.enabled = _selectedPipeIndex != -1 && _selectedPointIndex != -1;
-            if (GUILayout.Button("Delete Selected Point"))
-            {
-                Undo.RecordObject(_generator, "Deleted a point");
-                _generator.Pipes[_selectedPipeIndex].Points.Remove(_generator.Pipes[_selectedPipeIndex].Points[_selectedPointIndex]);
-                _generator.UpdateMesh();
-                _selectedPipeIndex = -1;
-                _selectedPointIndex = -1;
-            }
-            GUI.enabled = true;
-
-            GUI.enabled = _selectedPipeIndex != -1 && _selectedPointIndex != -1;
-            if (GUILayout.Button("Insert a point"))
-            {
-                Undo.RecordObject(_generator, "Inserted a point");
-                var position = Vector3.zero;
-                if (_selectedPointIndex != _generator.Pipes[_selectedPipeIndex].Points.Count - 1)
-                    position = _generator.Pipes[_selectedPipeIndex].Points[_selectedPointIndex] + (_generator.Pipes[_selectedPipeIndex].Points[_selectedPointIndex + 1] - _generator.Pipes[_selectedPipeIndex].Points[_selectedPointIndex]) / 2;
-                else
-                    position = _generator.Pipes[_selectedPipeIndex].Points[_selectedPointIndex] + Vector3.one;
-                _generator.Pipes[_selectedPipeIndex].Points.Insert(_selectedPointIndex + 1, position);
-                _generator.UpdateMesh();
-                _selectedPointIndex = _selectedPointIndex + 1;
-                Repaint();
-            }
-            GUI.enabled = true;
+            EditByHandGUI();
         }
 
         EditorGUILayout.Space(10);
@@ -171,6 +107,80 @@ public class PipeEditor : Editor
         {
             Undo.RecordObject(_generator, "Erased all Pipes");
             _generator.Pipes.Clear();
+            _generator.UpdateMesh();
+        }
+    }
+
+    private void EditByHandGUI()
+    {
+        GUI.enabled = _selectedPipeIndex != -1;
+        if (GUILayout.Button("Delete Selected Pipe"))
+        {
+            Undo.RecordObject(_generator, "Deleted a Pipe");
+            _generator.Pipes.RemoveAt(_selectedPipeIndex);
+            _generator.UpdateMesh();
+            _selectedPipeIndex = -1;
+        }
+        GUI.enabled = true;
+
+        GUI.enabled = _selectedPipeIndex != -1 && _selectedPointIndex != -1;
+        if (GUILayout.Button("Delete Selected Point"))
+        {
+            Undo.RecordObject(_generator, "Deleted a point");
+            _generator.Pipes[_selectedPipeIndex].Points.Remove(_generator.Pipes[_selectedPipeIndex].Points[_selectedPointIndex]);
+            _generator.UpdateMesh();
+            _selectedPipeIndex = -1;
+            _selectedPointIndex = -1;
+        }
+        GUI.enabled = true;
+
+        GUI.enabled = _selectedPipeIndex != -1 && _selectedPointIndex != -1;
+        if (GUILayout.Button("Insert a point"))
+        {
+            Undo.RecordObject(_generator, "Inserted a point");
+            var position = Vector3.zero;
+            if (_selectedPointIndex != _generator.Pipes[_selectedPipeIndex].Points.Count - 1)
+                position = _generator.Pipes[_selectedPipeIndex].Points[_selectedPointIndex] + (_generator.Pipes[_selectedPipeIndex].Points[_selectedPointIndex + 1] - _generator.Pipes[_selectedPipeIndex].Points[_selectedPointIndex]) / 2;
+            else
+                position = _generator.Pipes[_selectedPipeIndex].Points[_selectedPointIndex] + Vector3.one;
+            _generator.Pipes[_selectedPipeIndex].Points.Insert(_selectedPointIndex + 1, position);
+            _generator.UpdateMesh();
+            _selectedPointIndex = _selectedPointIndex + 1;
+            Repaint();
+        }
+        GUI.enabled = true;
+    }
+
+    private void EditPathGUI()
+    {
+        EditorGUI.BeginChangeCheck();
+        var pathGridSize = EditorGUILayout.FloatField("Grid Size", _generator.PathCreator.GridSize);
+        var pathHeight = EditorGUILayout.FloatField("Height", _generator.PathCreator.Height);
+        var chaos = EditorGUILayout.FloatField("Chaos", _generator.PathCreator.Chaos);
+        var straightPriority = EditorGUILayout.FloatField("Straight Proirity", _generator.PathCreator.StraightPathPriority);
+        var nearObstaclePriority = EditorGUILayout.FloatField("Near Obstacle Proirity", _generator.PathCreator.NearObstaclesPriority);
+
+        if (GUILayout.Button("Regenerate"))
+        {
+            RegeneratePath();
+        }
+
+        if (!_generator.PathCreator.LastPathSuccess)
+        {
+            EditorGUILayout.HelpBox("Last path build insuccessful", MessageType.Warning);
+        }
+
+        if (EditorGUI.EndChangeCheck())
+        {
+            Undo.RecordObject(_generator, "Set Field Value");
+
+            _generator.PathCreator.GridSize = Mathf.Clamp(pathGridSize, 0, Mathf.Infinity);
+            _generator.PathCreator.Height = Mathf.Clamp(pathHeight, pathGridSize, Mathf.Infinity);
+            _generator.PathCreator.StraightPathPriority = straightPriority;
+            _generator.PathCreator.NearObstaclesPriority = nearObstaclePriority;
+            _generator.PathCreator.Chaos = chaos;
+
+            RegeneratePath();
             _generator.UpdateMesh();
         }
     }
@@ -189,38 +199,15 @@ public class PipeEditor : Editor
 
     private void OnSceneGUI()
     {
-        Event evt = Event.current;
-
         if (_editingMode == 0)
-        {
-            Ray ray = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
-            if (Physics.Raycast(ray, out var hit, 1000))
-                _mouseHit = hit;
-
-            if (_isDragging)
-                Handles.DrawDottedLine(_startDragPoint, _mouseHit.point, 4);
-
-            if (evt.type == EventType.Layout)
-            {
-                HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
-            }
-            else
-            {
-                HandlePathInput(evt);
-            }
-        }
-
-        if (_editingMode == 1)
-        {
-            HandleEdit(evt);
-            return;
-        }
+            HandlePathInput(Event.current);
+        else if (_editingMode == 1)
+            HandleEdit(Event.current);
     }
 
     private void HandleEdit(Event evt)
     {
         Handles.matrix = _generator.transform.localToWorldMatrix;
-
 
         for (int i = 0; i < _generator.Pipes.Count; i++)
         {
@@ -254,12 +241,22 @@ public class PipeEditor : Editor
                 }
             }
         }
-
-
     }
 
     private void HandlePathInput(Event evt)
     {
+        Ray ray = HandleUtility.GUIPointToWorldRay(evt.mousePosition);
+        if (Physics.Raycast(ray, out var hit, 1000))
+            _mouseHit = hit;
+
+        if (_isDragging)
+            Handles.DrawDottedLine(_startDragPoint, _mouseHit.point, 4);
+
+        if (evt.type == EventType.Layout)
+        {
+            HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
+            return;
+        }
         if (evt.type == EventType.MouseDown && evt.button == 0 && evt.modifiers == EventModifiers.None)
         {
             _isDragging = true;

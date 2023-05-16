@@ -15,10 +15,10 @@ public class PathCreator
     public bool LastPathSuccess = true;
 
     public List<Vector3> Points = new();
+    public List<float> Distances = new();
 
     public List<Vector3> Create(Vector3 startPosition, Vector3 startNormal, Vector3 endPosition, Vector3 endNormal)
     {
-
         var path = new List<Vector3>();
         var pathStart = startPosition + startNormal.normalized * Height;
         var pathEnd = endPosition + endNormal.normalized * Height;
@@ -36,14 +36,12 @@ public class PathCreator
 
         if (pathPoints != null)
         {
-            foreach (var extraPoint in pathPoints)
-            {
-                path.Add(extraPoint.Position);
-            }
+            pathPoints.ForEach(pathPoint => path.Add(pathPoint.Position));
         }
         else
         {
             LastPathSuccess = false;
+            // Handle!
         }
 
         path.Add(endPoint.Position);
@@ -57,14 +55,16 @@ public class PathCreator
         var toSearch = new List<Point> { start };
         var visited = new List<Vector3>();
 
-        int iterations = 0;
         Points = new();
+        Distances = new();
 
         Dictionary<Vector3, Point> pointDictionary = new();
 
-        while (toSearch.Count > 0 && iterations < 200)
+        int iterations = 0;
+        while (toSearch.Count > 0 && iterations < 1000)
         {
             iterations++;
+
             var current = toSearch[0];
             foreach (var t in toSearch)
                 if (t.F < current.F || t.F == current.F && t.H < current.H) current = t;
@@ -73,6 +73,7 @@ public class PathCreator
             toSearch.Remove(current);
 
             Points.Add(current.Position);
+            Distances.Add(current.GetDistanceToNearestObstacle());
 
             if (Vector3.Distance(current.Position, target.Position) <= GridSize)
             {
@@ -104,7 +105,7 @@ public class PathCreator
             {
                 if (visited.Contains(neighbor.Position)) continue;
 
-                var costToNeighbor = current.G + 1;
+                var costToNeighbor = current.G + GridSize;
 
                 if (current.Connection != null && (current.Connection.Position - current.Position).normalized != (current.Connection.Position - neighbor.Position).normalized)
                 {
@@ -113,7 +114,7 @@ public class PathCreator
 
                 costToNeighbor += Random.Range(-Chaos, Chaos);
 
-                costToNeighbor += neighbor.GetDistanceToNearestObstacle() / 20 * NearObstaclesPriority;
+                costToNeighbor += neighbor.GetDistanceToNearestObstacle() * NearObstaclesPriority;
 
                 if (!toSearch.Contains(neighbor) || costToNeighbor < neighbor.G)
                 {
@@ -129,8 +130,6 @@ public class PathCreator
             }
         }
 
-        Debug.Log(iterations);
-
         return null;
     }
 
@@ -138,7 +137,6 @@ public class PathCreator
     {
         return Vector3.Cross(point2 - point1, point3 - point1).sqrMagnitude < 0.0001f;
     }
-
 }
 
 public class Point
@@ -150,6 +148,8 @@ public class Point
     public float G;
     public float H;
     public float F => G + H;
+
+    private readonly Vector3[] _directions = { Vector3.up, Vector3.down, Vector3.left, Vector3.right, Vector3.forward, Vector3.back };
 
     public Point(Vector3 position)
     {
@@ -163,7 +163,6 @@ public class Point
         return distance * 10;
     }
 
-    private List<Vector3> _directions = new() { Vector3.up, Vector3.down, Vector3.left, Vector3.right, Vector3.forward, Vector3.back };
 
     public float GetDistanceToNearestObstacle()
     {
@@ -171,7 +170,7 @@ public class Point
 
         foreach (var direction in _directions)
             if (Physics.Raycast(Position, direction, out RaycastHit hitPoint, 200))
-                Mathf.Min(minDistance, hitPoint.distance);
+                minDistance = Mathf.Min(minDistance, hitPoint.distance);
 
         return minDistance;
     }
@@ -183,7 +182,7 @@ public class Point
         var list = new List<Vector3>();
 
         foreach (var direction in _directions)
-            if (!Physics.CheckBox(Position + direction * gridSize, radiusVector))
+            if (!Physics.SphereCast(Position, radius, direction, out RaycastHit hit, gridSize + radius))
                 list.Add(Position + direction * gridSize);
 
         return list;
