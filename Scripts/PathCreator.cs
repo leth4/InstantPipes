@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 [System.Serializable]
 public class PathCreator
@@ -27,7 +28,22 @@ public class PathCreator
         Point startPoint = new(pathStart);
         Point endPoint = new(pathEnd);
 
+        var tempStartCollider = new GameObject();
+        tempStartCollider.transform.position = (pathStart + startPosition) / 2;
+        tempStartCollider.transform.localScale = new Vector3(Radius * 2, Vector3.Distance(pathStart, startPosition) - Radius * 3, Radius * 2);
+        tempStartCollider.transform.rotation = Quaternion.FromToRotation(Vector3.up, pathStart - startPosition);
+        tempStartCollider.AddComponent<CapsuleCollider>();
+
+        var tempEndCollider = new GameObject();
+        tempEndCollider.transform.position = (pathEnd + endPosition) / 2;
+        tempEndCollider.transform.localScale = new Vector3(Radius * 2, Vector3.Distance(pathEnd, endPosition), Radius * 2);
+        tempEndCollider.transform.rotation = Quaternion.FromToRotation(Vector3.up, pathEnd - endPosition);
+        tempEndCollider.AddComponent<CapsuleCollider>();
+
         var pathPoints = FindPath(startPoint, endPoint, startNormal.normalized);
+
+        UnityEngine.Object.DestroyImmediate(tempStartCollider);
+        UnityEngine.Object.DestroyImmediate(tempEndCollider);
 
         path.Add(startPosition);
         path.Add(startPoint.Position);

@@ -154,21 +154,12 @@ public class PipeEditor : Editor
     private void EditPathGUI()
     {
         EditorGUI.BeginChangeCheck();
+
         var pathGridSize = EditorGUILayout.FloatField("Grid Size", _generator.PathCreator.GridSize);
         var pathHeight = EditorGUILayout.FloatField("Height", _generator.PathCreator.Height);
         var chaos = EditorGUILayout.FloatField("Chaos", _generator.PathCreator.Chaos);
         var straightPriority = EditorGUILayout.FloatField("Straight Proirity", _generator.PathCreator.StraightPathPriority);
         var nearObstaclePriority = EditorGUILayout.FloatField("Near Obstacle Proirity", _generator.PathCreator.NearObstaclesPriority);
-
-        if (GUILayout.Button("Regenerate"))
-        {
-            RegeneratePath();
-        }
-
-        if (!_generator.PathCreator.LastPathSuccess)
-        {
-            EditorGUILayout.HelpBox("Last path build insuccessful", MessageType.Warning);
-        }
 
         if (EditorGUI.EndChangeCheck())
         {
@@ -181,7 +172,16 @@ public class PipeEditor : Editor
             _generator.PathCreator.Chaos = chaos;
 
             RegeneratePath();
-            _generator.UpdateMesh();
+        }
+
+        if (GUILayout.Button("Regenerate"))
+        {
+            RegeneratePath();
+        }
+
+        if (!_generator.PathCreator.LastPathSuccess)
+        {
+            EditorGUILayout.HelpBox("Last path build insuccessful", MessageType.Warning);
         }
     }
 
