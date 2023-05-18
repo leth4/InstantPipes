@@ -1,74 +1,77 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[ExecuteAlways]
-[RequireComponent(typeof(MeshFilter))]
-[RequireComponent(typeof(MeshCollider))]
-[RequireComponent(typeof(MeshRenderer))]
-public class PipeGenerator : MonoBehaviour
+namespace InstantPipes
 {
-    public float Radius = 1;
-    public int EdgeCount = 10;
-    public int CurvedSegmentCount = 10;
-    public float Curvature = 0.5f;
-
-    public bool HasRings;
-    public float RingThickness = 1;
-    public float RingRadius = 1.3f;
-
-    public bool HasCaps;
-    public float CapThickness = 1;
-    public float CapRadius = 1.3f;
-
-    public Material Material;
-
-    private Renderer _renderer;
-    private MeshCollider _collider;
-    private Mesh _mesh;
-
-    public List<Pipe> Pipes = new();
-    public PathCreator PathCreator = new();
-
-    private float _maxDistanceBetweenPoints;
-    public float MaxCurvature => _maxDistanceBetweenPoints / 2;
-
-    private void OnEnable()
+    [ExecuteAlways]
+    [RequireComponent(typeof(MeshFilter))]
+    [RequireComponent(typeof(MeshCollider))]
+    [RequireComponent(typeof(MeshRenderer))]
+    public class PipeGenerator : MonoBehaviour
     {
-        _renderer = GetComponent<Renderer>();
-        _collider = GetComponent<MeshCollider>();
+        public float Radius = 1;
+        public int EdgeCount = 10;
+        public int CurvedSegmentCount = 10;
+        public float Curvature = 0.5f;
 
-        _mesh = new Mesh { name = "Pipes" };
-        GetComponent<MeshFilter>().sharedMesh = _mesh;
-        _collider.sharedMesh = _mesh;
+        public bool HasRings;
+        public float RingThickness = 1;
+        public float RingRadius = 1.3f;
 
-        UpdateMesh();
-    }
+        public bool HasCaps;
+        public float CapThickness = 1;
+        public float CapRadius = 1.3f;
 
-    public void AddPipe(List<Vector3> points)
-    {
-        Pipes.Add(new Pipe(points));
-    }
+        public Material Material;
 
-    public void UpdateMesh()
-    {
-        _maxDistanceBetweenPoints = 0;
-        _collider.sharedMesh = null;
+        private Renderer _renderer;
+        private MeshCollider _collider;
+        private Mesh _mesh;
 
-        var submeshes = new List<CombineInstance>();
-        foreach (var pipe in Pipes)
+        public List<Pipe> Pipes = new();
+        public PathCreator PathCreator = new();
+
+        private float _maxDistanceBetweenPoints;
+        public float MaxCurvature => _maxDistanceBetweenPoints / 2;
+
+        private void OnEnable()
         {
-            _mesh.Clear();
+            _renderer = GetComponent<Renderer>();
+            _collider = GetComponent<MeshCollider>();
 
-            submeshes.Add(new() { mesh = pipe.GenerateMesh(this) });
-            _mesh.CombineMeshes(submeshes.ToArray(), false, false);
-
+            _mesh = new Mesh { name = "Pipes" };
+            GetComponent<MeshFilter>().sharedMesh = _mesh;
             _collider.sharedMesh = _mesh;
 
-            _maxDistanceBetweenPoints = Mathf.Max(_maxDistanceBetweenPoints, pipe.GetMaxDistanceBetweenPoints());
+            UpdateMesh();
         }
 
-        var materialArray = new Material[Pipes.Count];
-        for (int i = 0; i < materialArray.Length; i++) materialArray[i] = Material;
-        _renderer.sharedMaterials = materialArray;
+        public void AddPipe(List<Vector3> points)
+        {
+            Pipes.Add(new Pipe(points));
+        }
+        
+        public void UpdateMesh()
+        {
+            _maxDistanceBetweenPoints = 0;
+            _collider.sharedMesh = null;
+
+            var submeshes = new List<CombineInstance>();
+            foreach (var pipe in Pipes)
+            {
+                _mesh.Clear();
+
+                submeshes.Add(new() { mesh = pipe.GenerateMesh(this) });
+                _mesh.CombineMeshes(submeshes.ToArray(), false, false);
+
+                _collider.sharedMesh = _mesh;
+
+                _maxDistanceBetweenPoints = Mathf.Max(_maxDistanceBetweenPoints, pipe.GetMaxDistanceBetweenPoints());
+            }
+
+            var materialArray = new Material[Pipes.Count];
+            for (int i = 0; i < materialArray.Length; i++) materialArray[i] = Material;
+            _renderer.sharedMaterials = materialArray;
+        }
     }
 }

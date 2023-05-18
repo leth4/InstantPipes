@@ -9,7 +9,7 @@ Unity 2021.3 or higher.
 ## Installation
 
 Add the package to your project via the [Package Manager](https://docs.unity3d.com/Manual/upm-ui.html) using the Git URL
-`https://github.com/letharqic/PipeTool.git`. You can also clone the repository and point the Package Manager to your local copy.
+`https://github.com/letharqic/InstantPipes.git`. You can also clone the repository and point the Package Manager to your local copy.
 
 ## Usage
 
@@ -19,33 +19,35 @@ Add the package to your project via the [Package Manager](https://docs.unity3d.c
 2. Add a `Pipe Generator` component.
 3. Select a material for the `Material` property.
 
+After you're done, you can just delete the component.
+
 ### Using pathfinding
 
-In the component inspector, select the `Edit path` tab. Now in the scene view start dragging your cursor where you want the pipe to start, end let go where you want it to end; a pipe will appear.
+In the component inspector, select the `Create` tab. Now in the scene view start dragging your cursor where you want the pipe to start, end let go where you want it to end; a pipe will appear.
 
-The pathfinding can only detect objects with colliders on them. Pipes also detect each other.
-
-Ctrl+Z works. Don't exceed the max vertex count.
-
-### Manual Editing
-
-Every pipe is its own submesh, so you can assign separate materials.
-
-Select `Edit by hand` tab. You can select points and drag them.
-
-### Properties
+The tool uses A* pathfinding without a predefined grid — by raycasting from a point to the next points. Pipes can only detect colliders as obstacles.
 
 Property | Explanation
 :- | :-
-Radius | The radius of the pipes
-Curvature | The length of the curved connections; the bigger the value, the more smooth the pipe will look.
-Material | A default material that will be applied to all submeshes
-Edges | How many edges will the pipe have
-Segments | How many segments will a connector have
+Grid Size | The distance between searched points; making it too small can produce bad results.
+Height | How high the first and the last segment of a pipe will be. This value can't be smaller than grid size.
+Chaos | Adds randomness to the pathfinding, making paths twisted and chaotic.
+Straight Priority | Makes the algorithm prefer straight paths over turns.
+Near Obstacle Priority | Makes the pipes stay close to obstacles.
+Max Iterations | How many points will the algorithm check before giving up.
+Auto Regenerate | If turned on, any changes to path properties will make it regenerate.
+
+### Manual Editing
+
+In the component inspector, select the `Edit` tab. Now you can select any point of any pipe by clicking on it, and then either move it in the scene view or delete the point, delete the entire pipe or insert a new point via buttons in the inspector.
+
+Every pipe is its own submesh, so you can assign separate materials by dragging them into the scene view.
 
 ### TODO
 
-- [ ] Readme
+- [ ] Images for readme
 - [ ] Package
+- [ ] Chaotic pipe goes through visited points
+- [ ] ? Randomly get squashed when enabling rings
 - [ ] Drawing multiple pipes at once
 - [ ] Selecting an area and filling it with pipes
