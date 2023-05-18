@@ -32,20 +32,6 @@ public class PipeGenerator : MonoBehaviour
     private float _maxDistanceBetweenPoints;
     public float MaxCurvature => _maxDistanceBetweenPoints / 2;
 
-    // private void OnDrawGizmos()
-    // {
-    //     var maxDistance = 0f;
-    //     foreach (var dist in PathCreator.Distances)
-    //     {
-    //         maxDistance = Mathf.Max(maxDistance, dist);
-    //     }
-    //     for (int i = 0; i < PathCreator.Points.Count; i++)
-    //     {
-    //         Gizmos.color = Color.Lerp(Color.red, Color.white, PathCreator.Distances[i] / maxDistance);
-    //         Gizmos.DrawSphere(PathCreator.Points[i], 0.1f);
-    //     }
-    // }
-
     private void OnEnable()
     {
         _renderer = GetComponent<Renderer>();

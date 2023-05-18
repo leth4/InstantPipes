@@ -43,19 +43,9 @@ Material | A default material that will be applied to all submeshes
 Edges | How many edges will the pipe have
 Segments | How many segments will a connector have
 
+### TODO
 
-## TODO
-
-### Pathfinding
-
-- [ ] Handle edge cases, so there's always some path to be found.
-- [ ] Iterations slider
-
-### Bugs
-
-- [ ] Fix Quaternion error
-
-### Features
-
-- [ ] Multiple pipes at once
+- [ ] Readme
+- [ ] Package
+- [ ] Drawing multiple pipes at once
 - [ ] Selecting an area and filling it with pipes

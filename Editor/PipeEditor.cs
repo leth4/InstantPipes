@@ -6,16 +6,18 @@ using UnityEditor;
 public class PipeEditor : Editor
 {
     private PipeGenerator _generator;
-    private RaycastHit _mouseHit;
 
     private Vector3 _startDragPoint;
     private Vector3 _startDragNormal;
 
     private bool _isDragging = false;
+    private bool _autoRegenerate = true;
 
     private int _editingMode = 0;
     private int _selectedPipeIndex = -1;
     private int _selectedPointIndex = -1;
+
+    private bool _lastBuildFailed = false;
 
     private void OnEnable()
     {
@@ -73,7 +75,7 @@ public class PipeEditor : Editor
             Undo.RecordObject(_generator, "Set Field Value");
 
             _generator.Material = material;
-            _generator.Radius = radius;
+            _generator.Radius = Mathf.Max(0.01f, radius);
             _generator.Curvature = Mathf.Clamp(curvature, 0.2f, _generator.MaxCurvature);
             _generator.HasRings = hasRings;
             _generator.RingRadius = Mathf.Clamp(ringRadius, 0.05f, radius);
@@ -160,39 +162,44 @@ public class PipeEditor : Editor
         var chaos = EditorGUILayout.FloatField("Chaos", _generator.PathCreator.Chaos);
         var straightPriority = EditorGUILayout.FloatField("Straight Proirity", _generator.PathCreator.StraightPathPriority);
         var nearObstaclePriority = EditorGUILayout.FloatField("Near Obstacle Proirity", _generator.PathCreator.NearObstaclesPriority);
+        var maxIterations = EditorGUILayout.IntField("Max Iterations", _generator.PathCreator.MaxIterations);
+        _autoRegenerate = EditorGUILayout.Toggle("Auto Regenerate", _autoRegenerate);
 
         if (EditorGUI.EndChangeCheck())
         {
             Undo.RecordObject(_generator, "Set Field Value");
 
-            _generator.PathCreator.GridSize = Mathf.Clamp(pathGridSize, 0, Mathf.Infinity);
+            _generator.PathCreator.GridSize = Mathf.Clamp(pathGridSize, _generator.PathCreator.Radius, Mathf.Infinity);
             _generator.PathCreator.Height = Mathf.Clamp(pathHeight, pathGridSize, Mathf.Infinity);
             _generator.PathCreator.StraightPathPriority = straightPriority;
             _generator.PathCreator.NearObstaclesPriority = nearObstaclePriority;
             _generator.PathCreator.Chaos = chaos;
+            _generator.PathCreator.MaxIterations = maxIterations;
 
-            RegeneratePath();
+            if (_autoRegenerate) RegeneratePaths();
         }
 
         if (GUILayout.Button("Regenerate"))
         {
-            RegeneratePath();
+            RegeneratePaths();
         }
 
-        if (!_generator.PathCreator.LastPathSuccess)
+        if (_lastBuildFailed)
         {
-            EditorGUILayout.HelpBox("Last path build insuccessful", MessageType.Warning);
+            EditorGUILayout.HelpBox("Some paths weren't found!", MessageType.Warning);
         }
     }
 
-    private void RegeneratePath()
+    private void RegeneratePaths()
     {
         var pipesCopy = new List<Pipe>(_generator.Pipes);
         _generator.Pipes = new();
         _generator.UpdateMesh();
+        _lastBuildFailed = false;
         foreach (var pipe in pipesCopy)
         {
             _generator.AddPipe(_generator.PathCreator.Create(pipe.Points[0], pipe.Points[1] - pipe.Points[0], pipe.Points[^1], pipe.Points[^2] - pipe.Points[^1]));
+            if (!_generator.PathCreator.LastPathSuccess) _lastBuildFailed = true;
             _generator.UpdateMesh();
         }
     }
@@ -246,31 +253,43 @@ public class PipeEditor : Editor
     private void HandlePathInput(Event evt)
     {
         Ray ray = HandleUtility.GUIPointToWorldRay(evt.mousePosition);
+        RaycastHit mouseHit = new();
+
         if (Physics.Raycast(ray, out var hit, 1000))
-            _mouseHit = hit;
+        {
+            mouseHit = hit;
+        }
 
         if (_isDragging)
-            Handles.DrawDottedLine(_startDragPoint, _mouseHit.point, 4);
+        {
+            bool canStartAtPoint = !Physics.SphereCast(new Ray(_startDragPoint, _startDragNormal), _generator.PathCreator.Radius, _generator.PathCreator.Height);
+            bool canEndAtPoint = !Physics.SphereCast(new Ray(mouseHit.point, mouseHit.normal), _generator.PathCreator.Radius, _generator.PathCreator.Height);
+            Handles.color = (canStartAtPoint && canEndAtPoint) ? Color.white : Color.red;
+            Handles.DrawDottedLine(_startDragPoint, mouseHit.point, 4);
+        }
 
         if (evt.type == EventType.Layout)
         {
             HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
             return;
         }
+
         if (evt.type == EventType.MouseDown && evt.button == 0 && evt.modifiers == EventModifiers.None)
         {
             _isDragging = true;
-            _startDragNormal = _mouseHit.normal;
-            _startDragPoint = _mouseHit.point;
+            _startDragNormal = mouseHit.normal;
+            _startDragPoint = mouseHit.point;
         }
 
         if (_isDragging && evt.type == EventType.MouseUp && evt.button == 0 && evt.modifiers == EventModifiers.None)
         {
             _isDragging = false;
-            if (Vector3.Distance(_mouseHit.point, _startDragPoint) > 3)
+
+            if (Vector3.Distance(mouseHit.point, _startDragPoint) > 3)
             {
                 Undo.RecordObject(_generator, "Add Pipe");
-                _generator.AddPipe(_generator.PathCreator.Create(_startDragPoint, _startDragNormal, _mouseHit.point, _mouseHit.normal));
+                _generator.AddPipe(_generator.PathCreator.Create(_startDragPoint, _startDragNormal, mouseHit.point, mouseHit.normal));
+                if (!_generator.PathCreator.LastPathSuccess) _lastBuildFailed = true;
                 _generator.UpdateMesh();
             }
         }

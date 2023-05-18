@@ -8,15 +8,12 @@ public class PathCreator
     public float Height = 5;
     public float Radius;
     public float GridSize = 3;
-
     public float Chaos = 0;
     public float StraightPathPriority = 10;
     public float NearObstaclesPriority = 0;
+    public int MaxIterations = 1000;
 
     public bool LastPathSuccess = true;
-
-    public List<Vector3> Points = new();
-    public List<float> Distances = new();
 
     public List<Vector3> Create(Vector3 startPosition, Vector3 startNormal, Vector3 endPosition, Vector3 endNormal)
     {
@@ -57,7 +54,6 @@ public class PathCreator
         else
         {
             LastPathSuccess = false;
-            // Handle!
         }
 
         path.Add(endPoint.Position);
@@ -71,13 +67,10 @@ public class PathCreator
         var toSearch = new List<Point> { start };
         var visited = new List<Vector3>();
 
-        Points = new();
-        Distances = new();
-
         Dictionary<Vector3, Point> pointDictionary = new();
 
         int iterations = 0;
-        while (toSearch.Count > 0 && iterations < 1000)
+        while (toSearch.Count > 0 && iterations < MaxIterations)
         {
             iterations++;
 
@@ -88,10 +81,7 @@ public class PathCreator
             visited.Add(current.Position);
             toSearch.Remove(current);
 
-            Points.Add(current.Position);
-            Distances.Add(current.GetDistanceToNearestObstacle());
-
-            if (Vector3.Distance(current.Position, target.Position) <= GridSize)
+            if (Vector3.Distance(current.Position, target.Position) <= GridSize * 2)
             {
                 var currentPathPoint = current;
                 var path = new List<Point>();

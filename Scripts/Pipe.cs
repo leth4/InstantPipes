@@ -42,7 +42,7 @@ public class Pipe
         List<int> discPoints = new List<int>();
 
         var direction = (Points[0] - Points[1]).normalized;
-        var rotation = Quaternion.LookRotation(direction, Vector3.up);
+        var rotation = (direction != Vector3.zero) ? Quaternion.LookRotation(direction, Vector3.up) : Quaternion.identity;
         _previousRotation = rotation;
         _bezierPoints.Add(new BezierPoint(Points[0], rotation));
 
@@ -129,7 +129,7 @@ public class Pipe
         Vector3 bNext = Vector3.LerpUnclamped(Points[x], next, t + 0.001f);
 
         var tangent = Vector3.Cross(a - b, aNext - bNext);
-        var rotation = Quaternion.LookRotation((a - b).normalized, tangent);
+        var rotation = (a != b) ? Quaternion.LookRotation((a - b).normalized, tangent) : Quaternion.identity;
 
         // Rotate new tangent along the forward axis to match the previous part
 
