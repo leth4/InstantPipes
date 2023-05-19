@@ -23,6 +23,8 @@ namespace InstantPipes
             var pathEnd = endPosition + endNormal.normalized * Height;
             var baseDirection = (pathEnd - pathStart).normalized;
 
+            // TODO
+
             Point startPoint = new(pathStart);
             Point endPoint = new(pathEnd);
 
@@ -111,7 +113,6 @@ namespace InstantPipes
                 foreach (var neighbor in current.Neighbors)
                 {
                     if (ContainsVector(visited, neighbor.Position)) continue;
-                    // if (visited.Contains(neighbor.Position)) continue;
 
                     var costToNeighbor = current.G + GridSize;
 
@@ -120,7 +121,6 @@ namespace InstantPipes
                         costToNeighbor += StraightPathPriority;
                     }
 
-                    Random.InitState(1);
                     costToNeighbor += Random.Range(-Chaos, Chaos);
 
                     costToNeighbor += neighbor.GetDistanceToNearestObstacle() * NearObstaclesPriority;

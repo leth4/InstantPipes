@@ -46,7 +46,5 @@ Every pipe is its own submesh, so you can assign separate materials by dragging 
 ### TODO
 
 - [ ] Images for readme
-- [ ] Do something about randomness?
-- [ ] ? Randomly gets squashed when enabling rings
-- [ ] Drawing multiple pipes at once
-- [ ] Selecting an area and filling it with pipes
+- [ ] Multi-point selection
+- [ ] Pipes start at center of vector

@@ -96,12 +96,12 @@ namespace InstantPipes
 
             if (_editingMode == 0)
             {
-                EditPathGUI();
+                PathGUI();
             }
 
             if (_editingMode == 1)
             {
-                EditByHandGUI();
+                EditGUI();
             }
 
             EditorGUILayout.Space(10);
@@ -114,14 +114,13 @@ namespace InstantPipes
             }
         }
 
-        private void EditByHandGUI()
+        private void EditGUI()
         {
             GUI.enabled = _selectedPipeIndex != -1;
             if (GUILayout.Button("Delete Selected Pipe"))
             {
                 Undo.RecordObject(_generator, "Deleted a Pipe");
-                _generator.Pipes.RemoveAt(_selectedPipeIndex);
-                _generator.UpdateMesh();
+                _generator.RemovePipe(_selectedPipeIndex);
                 _selectedPipeIndex = -1;
             }
             GUI.enabled = true;
@@ -130,8 +129,7 @@ namespace InstantPipes
             if (GUILayout.Button("Delete Selected Point"))
             {
                 Undo.RecordObject(_generator, "Deleted a point");
-                _generator.Pipes[_selectedPipeIndex].Points.Remove(_generator.Pipes[_selectedPipeIndex].Points[_selectedPointIndex]);
-                _generator.UpdateMesh();
+                _generator.RemovePoint(_selectedPipeIndex, _selectedPointIndex);
                 _selectedPipeIndex = -1;
                 _selectedPointIndex = -1;
             }
@@ -141,26 +139,20 @@ namespace InstantPipes
             if (GUILayout.Button("Insert a point"))
             {
                 Undo.RecordObject(_generator, "Inserted a point");
-                var position = Vector3.zero;
-                if (_selectedPointIndex != _generator.Pipes[_selectedPipeIndex].Points.Count - 1)
-                    position = (_generator.Pipes[_selectedPipeIndex].Points[_selectedPointIndex + 1] + _generator.Pipes[_selectedPipeIndex].Points[_selectedPointIndex]) / 2;
-                else
-                    position = _generator.Pipes[_selectedPipeIndex].Points[_selectedPointIndex] + Vector3.one;
-                _generator.Pipes[_selectedPipeIndex].Points.Insert(_selectedPointIndex + 1, position);
-                _generator.UpdateMesh();
-                _selectedPointIndex = _selectedPointIndex + 1;
+                _generator.InsertPoint(_selectedPipeIndex, ref _selectedPointIndex);
                 Repaint();
             }
             GUI.enabled = true;
         }
 
-        private void EditPathGUI()
+        private void PathGUI()
         {
             EditorGUI.BeginChangeCheck();
 
             var maxIterations = EditorGUILayout.IntField("Max Iterations", _generator.PathCreator.MaxIterations);
             var pathGridSize = EditorGUILayout.FloatField("Grid Size", _generator.PathCreator.GridSize);
             var pathHeight = EditorGUILayout.FloatField("Height", _generator.PathCreator.Height);
+            var pipesAmount = EditorGUILayout.IntSlider("Amount", _generator.PipesAmount, 1, 10);
             var chaos = EditorGUILayout.Slider("Chaos", _generator.PathCreator.Chaos, 0, 100);
             var straightPriority = EditorGUILayout.Slider("Straight Proirity", _generator.PathCreator.StraightPathPriority, 0, 100);
             var nearObstaclePriority = EditorGUILayout.Slider("Near Obstacle Proirity", _generator.PathCreator.NearObstaclesPriority, 0, 100);
@@ -175,6 +167,8 @@ namespace InstantPipes
                 _generator.PathCreator.NearObstaclesPriority = nearObstaclePriority;
                 _generator.PathCreator.Chaos = chaos;
                 _generator.PathCreator.MaxIterations = maxIterations;
+
+                _generator.PipesAmount = pipesAmount;
 
                 if (_autoRegenerate) RegeneratePaths();
             }
@@ -192,16 +186,7 @@ namespace InstantPipes
 
         private void RegeneratePaths()
         {
-            var pipesCopy = new List<Pipe>(_generator.Pipes);
-            _generator.Pipes = new();
-            _generator.UpdateMesh();
-            _lastBuildFailed = false;
-            foreach (var pipe in pipesCopy)
-            {
-                _generator.AddPipe(_generator.PathCreator.Create(pipe.Points[0], pipe.Points[1] - pipe.Points[0], pipe.Points[^1], pipe.Points[^2] - pipe.Points[^1]));
-                if (!_generator.PathCreator.LastPathSuccess) _lastBuildFailed = true;
-                _generator.UpdateMesh();
-            }
+            _lastBuildFailed = _generator.RegeneratePaths();
         }
 
         private void OnSceneGUI()
@@ -285,12 +270,10 @@ namespace InstantPipes
             {
                 _isDragging = false;
 
-                if (Vector3.Distance(mouseHit.point, _startDragPoint) > 3)
+                if (Vector3.Distance(mouseHit.point, _startDragPoint) > _generator.PathCreator.GridSize)
                 {
                     Undo.RecordObject(_generator, "Add Pipe");
-                    _generator.AddPipe(_generator.PathCreator.Create(_startDragPoint, _startDragNormal, mouseHit.point, mouseHit.normal));
-                    if (!_generator.PathCreator.LastPathSuccess) _lastBuildFailed = true;
-                    _generator.UpdateMesh();
+                    _lastBuildFailed = _generator.AddPipe(_startDragPoint, _startDragNormal, mouseHit.point, mouseHit.normal);
                 }
             }
             Repaint();

@@ -22,6 +22,8 @@ namespace InstantPipes
         public float CapThickness = 1;
         public float CapRadius = 1.3f;
 
+        public int PipesAmount = 1;
+
         public Material Material;
 
         private Renderer _renderer;
@@ -46,11 +48,6 @@ namespace InstantPipes
             UpdateMesh();
         }
 
-        public void AddPipe(List<Vector3> points)
-        {
-            Pipes.Add(new Pipe(points));
-        }
-        
         public void UpdateMesh()
         {
             _maxDistanceBetweenPoints = 0;
@@ -73,5 +70,69 @@ namespace InstantPipes
             for (int i = 0; i < materialArray.Length; i++) materialArray[i] = Material;
             _renderer.sharedMaterials = materialArray;
         }
+
+        public bool AddPipe(Vector3 startPoint, Vector3 startNormal, Vector3 endPoint, Vector3 endNormal)
+        {
+            var failed = false;
+
+            var vectorLength = PipesAmount * Radius + (PipesAmount - 1) * PathCreator.GridSize;
+
+            var startVector = Vector3.Cross(startNormal, endPoint - startPoint).normalized * vectorLength;
+            var endVector = Vector3.Cross(endNormal, endPoint - startPoint).normalized * vectorLength;
+            var stepSize = startVector.magnitude / (PipesAmount);
+
+            for (int i = 0; i < PipesAmount; i++)
+            {
+                var start = startVector.normalized * (stepSize * i);
+                var end = endVector.normalized * (stepSize * i);
+
+                Pipes.Add(new Pipe(PathCreator.Create(start + startPoint, startNormal, end + endPoint, endNormal)));
+                if (!PathCreator.LastPathSuccess) failed = true;
+                UpdateMesh();
+            }
+
+            return failed;
+        }
+
+
+        public void InsertPoint(int pipeIndex, ref int pointIndex)
+        {
+            var position = Vector3.zero;
+            if (pointIndex != Pipes[pipeIndex].Points.Count - 1)
+                position = (Pipes[pipeIndex].Points[pointIndex + 1] + Pipes[pipeIndex].Points[pointIndex]) / 2;
+            else
+                position = Pipes[pipeIndex].Points[pointIndex] + Vector3.one;
+            Pipes[pipeIndex].Points.Insert(pointIndex + 1, position);
+            pointIndex += 1;
+            UpdateMesh();
+        }
+
+        public void RemovePoint(int pipeIndex, int pointIndex)
+        {
+            Pipes[pipeIndex].Points.RemoveAt(pointIndex);
+            UpdateMesh();
+        }
+
+        public void RemovePipe(int pipeIndex)
+        {
+            Pipes.RemoveAt(pipeIndex);
+            UpdateMesh();
+        }
+
+        public bool RegeneratePaths()
+        {
+            var pipesCopy = new List<Pipe>(Pipes);
+            Pipes = new();
+            UpdateMesh();
+            var failed = false;
+            foreach (var pipe in pipesCopy)
+            {
+                Pipes.Add(new Pipe(PathCreator.Create(pipe.Points[0], pipe.Points[1] - pipe.Points[0], pipe.Points[^1], pipe.Points[^2] - pipe.Points[^1])));
+                if (!PathCreator.LastPathSuccess) failed = true;
+                UpdateMesh();
+            }
+            return failed;
+        }
+
     }
 }
