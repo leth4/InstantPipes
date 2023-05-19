@@ -110,7 +110,8 @@ namespace InstantPipes
 
                 foreach (var neighbor in current.Neighbors)
                 {
-                    if (visited.Contains(neighbor.Position)) continue;
+                    if (ContainsVector(visited, neighbor.Position)) continue;
+                    // if (visited.Contains(neighbor.Position)) continue;
 
                     var costToNeighbor = current.G + GridSize;
 
@@ -119,6 +120,7 @@ namespace InstantPipes
                         costToNeighbor += StraightPathPriority;
                     }
 
+                    Random.InitState(1);
                     costToNeighbor += Random.Range(-Chaos, Chaos);
 
                     costToNeighbor += neighbor.GetDistanceToNearestObstacle() * NearObstaclesPriority;
@@ -143,6 +145,15 @@ namespace InstantPipes
         private bool AreOnSameLine(Vector3 point1, Vector3 point2, Vector3 point3)
         {
             return Vector3.Cross(point2 - point1, point3 - point1).sqrMagnitude < 0.0001f;
+        }
+
+        private bool ContainsVector(List<Vector3> list, Vector3 vector)
+        {
+            foreach (var pos in list)
+            {
+                if ((vector - pos).sqrMagnitude < 0.0001f) return true;
+            }
+            return false;
         }
 
         private class Point

@@ -1,0 +1,7 @@
+{
+  "name": "com.leth.instantpipes",
+  "version": "1.0.0",
+  "displayName": "InstantPipes",
+  "description": "An editor tool for procedurally generating pipes by just dragging the cursor from start to end — the pipe will find the path in a customizable way.",
+  "unity": "2021.3"
+}
