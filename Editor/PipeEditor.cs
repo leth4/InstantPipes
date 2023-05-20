@@ -47,7 +47,7 @@ namespace InstantPipes
 
             GUILayout.Label("Pipes", EditorStyles.boldLabel);
             var radius = EditorGUILayout.FloatField("Radius", _generator.Radius);
-            var curvature = EditorGUILayout.Slider("Curvature", _generator.Curvature, 0.2f, _generator.MaxCurvature);
+            var curvature = EditorGUILayout.Slider("Curvature", _generator.Curvature, 0.01f, _generator.MaxCurvature);
             var material = (Material)EditorGUILayout.ObjectField("Material", _generator.Material, typeof(Material), false);
             EditorGUILayout.Space(10);
 
@@ -55,8 +55,8 @@ namespace InstantPipes
             float ringRadius = _generator.RingRadius, ringThickness = _generator.RingThickness;
             if (_generator.HasRings)
             {
-                ringRadius = EditorGUILayout.Slider("Radius", _generator.RingRadius, 0.05f, radius);
-                ringThickness = EditorGUILayout.Slider("Thickness", _generator.RingThickness, 0.1f, 1);
+                ringRadius = EditorGUILayout.Slider("Radius", _generator.RingRadius, 0, radius);
+                ringThickness = EditorGUILayout.Slider("Thickness", _generator.RingThickness, 0, radius);
                 EditorGUILayout.Space(10);
             }
 
@@ -64,8 +64,8 @@ namespace InstantPipes
             float capRadius = _generator.CapRadius, capThickness = _generator.CapThickness;
             if (_generator.HasCaps)
             {
-                capRadius = EditorGUILayout.Slider("Radius", _generator.CapRadius, 0.05f, radius);
-                capThickness = EditorGUILayout.Slider("Thickness", _generator.CapThickness, 0.1f, 1);
+                capRadius = EditorGUILayout.Slider("Radius", _generator.CapRadius, 0, radius);
+                capThickness = EditorGUILayout.Slider("Thickness", _generator.CapThickness, 0, radius);
             }
             EditorGUILayout.Space(10);
 
@@ -80,13 +80,13 @@ namespace InstantPipes
 
                 _generator.Material = material;
                 _generator.Radius = Mathf.Max(0.01f, radius);
-                _generator.Curvature = Mathf.Clamp(curvature, 0.2f, _generator.MaxCurvature);
+                _generator.Curvature = Mathf.Clamp(curvature, 0.01f, _generator.MaxCurvature);
                 _generator.HasRings = hasRings;
-                _generator.RingRadius = Mathf.Clamp(ringRadius, 0.05f, radius);
-                _generator.RingThickness = Mathf.Clamp(ringThickness, 0.1f, 1);
+                _generator.RingRadius = Mathf.Clamp(ringRadius, 0, radius);
+                _generator.RingThickness = Mathf.Clamp(ringThickness, 0, radius);
                 _generator.HasCaps = hasCaps;
-                _generator.CapRadius = Mathf.Clamp(capRadius, 0.05f, radius);
-                _generator.CapThickness = Mathf.Clamp(capThickness, 0.1f, 1);
+                _generator.CapRadius = Mathf.Clamp(capRadius, 0, radius);
+                _generator.CapThickness = Mathf.Clamp(capThickness, 0, radius);
                 _generator.EdgeCount = edgeCount;
                 _generator.CurvedSegmentCount = segmentCount;
 
@@ -223,7 +223,7 @@ namespace InstantPipes
                     }
 
                     if (_selectedPipeIndex == i && _selectedPointsIndexes.Contains(j)) Handles.color = Color.yellow;
-                    if (Handles.Button(_generator.Pipes[i].Points[j], Quaternion.identity, 0.8f, 2f, Handles.SphereHandleCap))
+                    if (Handles.Button(_generator.Pipes[i].Points[j], Quaternion.identity, _generator.Radius * 2, _generator.Radius * 4, Handles.SphereHandleCap))
                     {
                         if (evt.shift && _selectedPipeIndex == i)
                         {

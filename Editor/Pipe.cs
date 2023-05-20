@@ -226,6 +226,7 @@ namespace InstantPipes
                 point.Pos -= point.LocalToWorldVector(Vector3.forward) * _generator.RingThickness / 2;
 
             var radius = (isLast || isFirst) ? _generator.CapRadius + _generator.Radius : _generator.RingRadius + _generator.Radius;
+            var uv = (isLast || isFirst) ? _generator.CapThickness : _generator.RingThickness;
 
             for (int p = 0; p < 2; p++)
             {
@@ -236,13 +237,13 @@ namespace InstantPipes
                     Vector3 direction = new Vector3(MathF.Sin(angRad), Mathf.Cos(angRad), 0);
                     _normals.Add(point.LocalToWorldVector(direction.normalized));
                     _verts.Add(point.LocalToWorldPosition(direction * radius));
-                    _uvs.Add(new Vector2(t, 2 * p));
+                    _uvs.Add(new Vector2(t, uv * p));
                     planeUVs.Add(direction);
                 }
 
                 _normals.Add(_normals[^_generator.EdgeCount]);
                 _verts.Add(_verts[^_generator.EdgeCount]);
-                _uvs.Add(new Vector2(1, 2 * p));
+                _uvs.Add(new Vector2(1, uv * p));
                 planeUVs.Add(planeUVs[^1]);
                 if (isLast || isFirst)
                     point.Pos += point.LocalToWorldVector(Vector3.forward) * _generator.CapThickness;
