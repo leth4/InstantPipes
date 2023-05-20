@@ -41,10 +41,11 @@ Auto Regenerate | If turned on, any changes to path properties will make it rege
 
 In the component inspector, select the `Edit` tab. Now you can select any point of any pipe by clicking on it, and then either move it in the scene view or delete the point, delete the entire pipe or insert a new point via buttons in the inspector.
 
+You can select and edit multiple points of a pipe by holding `Shift`.
+
 Every pipe is its own submesh, so you can assign separate materials by dragging them into the scene view.
 
 ### TODO
 
 - [ ] Images for readme
-- [ ] Multi-point selection
 - [ ] It doesn't show failed builds anymore

@@ -106,7 +106,7 @@ namespace InstantPipes
             return !failed;
         }
 
-        public void InsertPoint(int pipeIndex, ref int pointIndex)
+        public void InsertPoint(int pipeIndex, int pointIndex)
         {
             var position = Vector3.zero;
             if (pointIndex != Pipes[pipeIndex].Points.Count - 1)
@@ -114,7 +114,6 @@ namespace InstantPipes
             else
                 position = Pipes[pipeIndex].Points[pointIndex] + Vector3.one;
             Pipes[pipeIndex].Points.Insert(pointIndex + 1, position);
-            pointIndex += 1;
             UpdateMesh();
         }
 

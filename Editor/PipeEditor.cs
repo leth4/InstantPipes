@@ -15,10 +15,12 @@ namespace InstantPipes
         private bool _isDragging = false;
         private bool _autoRegenerate = true;
         private bool _lastBuildFailed = false;
-
         private int _editingMode = 0;
+
         private int _selectedPipeIndex = -1;
-        private int _selectedPointIndex = -1;
+        private List<int> _selectedPointsIndexes = new();
+        private Vector3 _positionHandle;
+
 
         private void OnEnable()
         {
@@ -36,6 +38,7 @@ namespace InstantPipes
         private void OnUndo()
         {
             _generator.UpdateMesh();
+            SetHandlePosition();
         }
 
         public override void OnInspectorGUI()
@@ -125,21 +128,22 @@ namespace InstantPipes
             }
             GUI.enabled = true;
 
-            GUI.enabled = _selectedPipeIndex != -1 && _selectedPointIndex != -1;
-            if (GUILayout.Button("Delete Selected Point"))
+            GUI.enabled = _selectedPipeIndex != -1 && _selectedPointsIndexes.Count != 0;
+            if (GUILayout.Button(_selectedPointsIndexes.Count == 1 ? "Delete Selected Point" : "Delete Selected Points"))
             {
                 Undo.RecordObject(_generator, "Deleted a point");
-                _generator.RemovePoint(_selectedPipeIndex, _selectedPointIndex);
+                _selectedPointsIndexes.ForEach(pointIndex => _generator.RemovePoint(_selectedPipeIndex, pointIndex));
                 _selectedPipeIndex = -1;
-                _selectedPointIndex = -1;
+                _selectedPointsIndexes.Clear();
             }
             GUI.enabled = true;
 
-            GUI.enabled = _selectedPipeIndex != -1 && _selectedPointIndex != -1;
+            GUI.enabled = _selectedPipeIndex != -1 && _selectedPointsIndexes.Count == 0;
             if (GUILayout.Button("Insert a point"))
             {
                 Undo.RecordObject(_generator, "Inserted a point");
-                _generator.InsertPoint(_selectedPipeIndex, ref _selectedPointIndex);
+                _generator.InsertPoint(_selectedPipeIndex, _selectedPointsIndexes[0]);
+                _selectedPointsIndexes[0]++;
                 Repaint();
             }
             GUI.enabled = true;
@@ -196,6 +200,14 @@ namespace InstantPipes
                 HandleEdit(Event.current);
         }
 
+        private void SetHandlePosition()
+        {
+            if (_selectedPointsIndexes.Count == 0) return;
+            var sum = Vector3.zero;
+            _selectedPointsIndexes.ForEach(index => sum += _generator.Pipes[_selectedPipeIndex].Points[index]);
+            _positionHandle = sum / _selectedPointsIndexes.Count;
+        }
+
         private void HandleEdit(Event evt)
         {
             Handles.matrix = _generator.transform.localToWorldMatrix;
@@ -204,32 +216,49 @@ namespace InstantPipes
             {
                 for (int j = 0; j < _generator.Pipes[i].Points.Count; j++)
                 {
-                    if (i == _selectedPipeIndex && j == _selectedPointIndex)
+                    Handles.color = (_selectedPipeIndex == i) ? Color.white : new Color(1, 1, 1, 0.4f);
+                    if (j != 0)
                     {
-                        Handles.zTest = UnityEngine.Rendering.CompareFunction.Always;
+                        Handles.DrawLine(_generator.Pipes[i].Points[j], _generator.Pipes[i].Points[j - 1]);
+                    }
 
-                        EditorGUI.BeginChangeCheck();
-                        var position = Handles.PositionHandle(_generator.Pipes[i].Points[j], Quaternion.identity);
-                        if (EditorGUI.EndChangeCheck())
-                        {
-                            Undo.RecordObject(_generator, "Moved a point");
-                            _generator.Pipes[i].Points[j] = position;
-                            _generator.UpdateMesh();
-                        }
-                    }
-                    else
+                    if (_selectedPipeIndex == i && _selectedPointsIndexes.Contains(j)) Handles.color = Color.yellow;
+                    if (Handles.Button(_generator.Pipes[i].Points[j], Quaternion.identity, 0.8f, 2f, Handles.SphereHandleCap))
                     {
-                        if (j != 0)
+                        if (evt.shift && _selectedPipeIndex == i)
                         {
-                            Handles.DrawLine(_generator.Pipes[i].Points[j], _generator.Pipes[i].Points[j - 1]);
+                            if (!_selectedPointsIndexes.Contains(j))
+                                _selectedPointsIndexes.Add(j);
+                            else
+                                _selectedPointsIndexes.Remove(j);
                         }
-                        if (Handles.Button(_generator.Pipes[i].Points[j], Quaternion.identity, 0.8f, 2f, Handles.SphereHandleCap))
+                        else
                         {
-                            _selectedPipeIndex = i;
-                            _selectedPointIndex = j;
-                            Repaint();
+                            _selectedPointsIndexes = new() { j };
                         }
+
+                        _selectedPipeIndex = i;
+                        SetHandlePosition();
+                        Repaint();
                     }
+                }
+            }
+
+            if (_selectedPointsIndexes.Count != 0)
+            {
+                Handles.zTest = UnityEngine.Rendering.CompareFunction.Always;
+
+                EditorGUI.BeginChangeCheck();
+                var position = Handles.PositionHandle(_positionHandle, Quaternion.identity);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    Undo.RecordObject(_generator, "Moved a point");
+                    foreach (var index in _selectedPointsIndexes)
+                    {
+                        _generator.Pipes[_selectedPipeIndex].Points[index] += position - _positionHandle;
+                    }
+                    _positionHandle = position;
+                    _generator.UpdateMesh();
                 }
             }
         }
