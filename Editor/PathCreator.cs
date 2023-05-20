@@ -23,30 +23,10 @@ namespace InstantPipes
             var pathEnd = endPosition + endNormal.normalized * Height;
             var baseDirection = (pathEnd - pathStart).normalized;
 
-            // TODO
-
-            Point startPoint = new(pathStart);
-            Point endPoint = new(pathEnd);
-
-            var tempStartCollider = new GameObject();
-            tempStartCollider.transform.position = (pathStart + startPosition) / 2;
-            tempStartCollider.transform.localScale = new Vector3(Radius * 2, Vector3.Distance(pathStart, startPosition) - Radius * 3, Radius * 2);
-            tempStartCollider.transform.rotation = Quaternion.FromToRotation(Vector3.up, pathStart - startPosition);
-            tempStartCollider.AddComponent<CapsuleCollider>();
-
-            var tempEndCollider = new GameObject();
-            tempEndCollider.transform.position = (pathEnd + endPosition) / 2;
-            tempEndCollider.transform.localScale = new Vector3(Radius * 2, Vector3.Distance(pathEnd, endPosition), Radius * 2);
-            tempEndCollider.transform.rotation = Quaternion.FromToRotation(Vector3.up, pathEnd - endPosition);
-            tempEndCollider.AddComponent<CapsuleCollider>();
-
-            var pathPoints = FindPath(startPoint, endPoint, startNormal.normalized);
-
-            UnityEngine.Object.DestroyImmediate(tempStartCollider);
-            UnityEngine.Object.DestroyImmediate(tempEndCollider);
+            var pathPoints = FindPath(new(pathStart), new(pathEnd), startNormal.normalized);
 
             path.Add(startPosition);
-            path.Add(startPoint.Position);
+            path.Add(pathStart);
 
             LastPathSuccess = true;
 
@@ -59,7 +39,7 @@ namespace InstantPipes
                 LastPathSuccess = false;
             }
 
-            path.Add(endPoint.Position);
+            path.Add(pathEnd);
             path.Add(endPosition);
 
             return path;
@@ -123,7 +103,7 @@ namespace InstantPipes
 
                     costToNeighbor += Random.Range(-Chaos, Chaos);
 
-                    costToNeighbor += neighbor.GetDistanceToNearestObstacle() * NearObstaclesPriority;
+                    costToNeighbor += neighbor.GetDistanceToNearestObstacle() * NearObstaclesPriority / 10;
 
                     if (!toSearch.Contains(neighbor) || costToNeighbor < neighbor.G)
                     {

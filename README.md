@@ -47,4 +47,4 @@ Every pipe is its own submesh, so you can assign separate materials by dragging 
 
 - [ ] Images for readme
 - [ ] Multi-point selection
-- [ ] Pipes start at center of vector
+- [ ] It doesn't show failed builds anymore

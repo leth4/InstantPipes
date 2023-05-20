@@ -76,24 +76,35 @@ namespace InstantPipes
             var failed = false;
 
             var vectorLength = PipesAmount * Radius + (PipesAmount - 1) * PathCreator.GridSize;
-
             var startVector = Vector3.Cross(startNormal, endPoint - startPoint).normalized * vectorLength;
             var endVector = Vector3.Cross(endNormal, endPoint - startPoint).normalized * vectorLength;
             var stepSize = startVector.magnitude / (PipesAmount);
 
+            var temporaryColliders = new List<GameObject>();
+
             for (int i = 0; i < PipesAmount; i++)
             {
-                var start = startVector.normalized * (stepSize * i);
-                var end = endVector.normalized * (stepSize * i);
+                var start = startVector.normalized * (stepSize * (i - PipesAmount / 2f + 0.5f));
+                var end = endVector.normalized * (stepSize * (i - PipesAmount / 2f + 0.5f));
+
+                temporaryColliders.Add(CreateTemporaryCollider(startPoint + start, startNormal));
+                temporaryColliders.Add(CreateTemporaryCollider(endPoint + end, endNormal));
+            }
+
+            for (int i = 0; i < PipesAmount; i++)
+            {
+                var start = startVector.normalized * (stepSize * (i - PipesAmount / 2f + 0.5f));
+                var end = endVector.normalized * (stepSize * (i - PipesAmount / 2f + 0.5f));
 
                 Pipes.Add(new Pipe(PathCreator.Create(start + startPoint, startNormal, end + endPoint, endNormal)));
                 if (!PathCreator.LastPathSuccess) failed = true;
                 UpdateMesh();
             }
 
-            return failed;
-        }
+            temporaryColliders.ForEach(collider => Object.DestroyImmediate(collider));
 
+            return !failed;
+        }
 
         public void InsertPoint(int pipeIndex, ref int pointIndex)
         {
@@ -125,14 +136,35 @@ namespace InstantPipes
             Pipes = new();
             UpdateMesh();
             var failed = false;
+
+            var temporaryColliders = new List<GameObject>();
+
+            foreach (var pipe in pipesCopy)
+            {
+                temporaryColliders.Add(CreateTemporaryCollider(pipe.Points[0], (pipe.Points[1] - pipe.Points[0]).normalized));
+                temporaryColliders.Add(CreateTemporaryCollider(pipe.Points[^1], (pipe.Points[^2] - pipe.Points[^1]).normalized));
+            }
+
             foreach (var pipe in pipesCopy)
             {
                 Pipes.Add(new Pipe(PathCreator.Create(pipe.Points[0], pipe.Points[1] - pipe.Points[0], pipe.Points[^1], pipe.Points[^2] - pipe.Points[^1])));
                 if (!PathCreator.LastPathSuccess) failed = true;
                 UpdateMesh();
             }
-            return failed;
+
+            temporaryColliders.ForEach(collider => Object.DestroyImmediate(collider));
+
+            return !failed;
         }
 
+        private GameObject CreateTemporaryCollider(Vector3 point, Vector3 normal)
+        {
+            var tempCollider = new GameObject();
+            tempCollider.transform.position = point + (normal * PathCreator.Height) / 2;
+            tempCollider.transform.localScale = new Vector3(Radius * 2, PathCreator.Height - Radius * 3, Radius * 2);
+            tempCollider.transform.rotation = Quaternion.FromToRotation(Vector3.up, normal);
+            tempCollider.AddComponent<CapsuleCollider>();
+            return tempCollider;
+        }
     }
 }

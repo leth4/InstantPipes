@@ -147,12 +147,13 @@ namespace InstantPipes
 
         private void PathGUI()
         {
+            _generator.PipesAmount = EditorGUILayout.IntSlider("Amount", _generator.PipesAmount, 1, 10);
+
             EditorGUI.BeginChangeCheck();
 
             var maxIterations = EditorGUILayout.IntField("Max Iterations", _generator.PathCreator.MaxIterations);
             var pathGridSize = EditorGUILayout.FloatField("Grid Size", _generator.PathCreator.GridSize);
             var pathHeight = EditorGUILayout.FloatField("Height", _generator.PathCreator.Height);
-            var pipesAmount = EditorGUILayout.IntSlider("Amount", _generator.PipesAmount, 1, 10);
             var chaos = EditorGUILayout.Slider("Chaos", _generator.PathCreator.Chaos, 0, 100);
             var straightPriority = EditorGUILayout.Slider("Straight Proirity", _generator.PathCreator.StraightPathPriority, 0, 100);
             var nearObstaclePriority = EditorGUILayout.Slider("Near Obstacle Proirity", _generator.PathCreator.NearObstaclesPriority, 0, 100);
@@ -167,8 +168,6 @@ namespace InstantPipes
                 _generator.PathCreator.NearObstaclesPriority = nearObstaclePriority;
                 _generator.PathCreator.Chaos = chaos;
                 _generator.PathCreator.MaxIterations = maxIterations;
-
-                _generator.PipesAmount = pipesAmount;
 
                 if (_autoRegenerate) RegeneratePaths();
             }
@@ -186,7 +185,7 @@ namespace InstantPipes
 
         private void RegeneratePaths()
         {
-            _lastBuildFailed = _generator.RegeneratePaths();
+            _lastBuildFailed = !_generator.RegeneratePaths();
         }
 
         private void OnSceneGUI()
@@ -273,7 +272,7 @@ namespace InstantPipes
                 if (Vector3.Distance(mouseHit.point, _startDragPoint) > _generator.PathCreator.GridSize)
                 {
                     Undo.RecordObject(_generator, "Add Pipe");
-                    _lastBuildFailed = _generator.AddPipe(_startDragPoint, _startDragNormal, mouseHit.point, mouseHit.normal);
+                    _lastBuildFailed = !_generator.AddPipe(_startDragPoint, _startDragNormal, mouseHit.point, mouseHit.normal);
                 }
             }
             Repaint();
