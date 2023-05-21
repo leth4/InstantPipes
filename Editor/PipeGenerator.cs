@@ -91,17 +91,25 @@ namespace InstantPipes
                 temporaryColliders.Add(CreateTemporaryCollider(endPoint + end, endNormal));
             }
 
-            for (int i = 0; i < PipesAmount; i++)
+            try
             {
-                var start = startVector.normalized * (stepSize * (i - PipesAmount / 2f + 0.5f));
-                var end = endVector.normalized * (stepSize * (i - PipesAmount / 2f + 0.5f));
+                for (int i = 0; i < PipesAmount; i++)
+                {
+                    var start = startVector.normalized * (stepSize * (i - PipesAmount / 2f + 0.5f));
+                    var end = endVector.normalized * (stepSize * (i - PipesAmount / 2f + 0.5f));
 
-                Pipes.Add(new Pipe(PathCreator.Create(start + startPoint, startNormal, end + endPoint, endNormal)));
-                if (!PathCreator.LastPathSuccess) failed = true;
-                UpdateMesh();
+                    Pipes.Add(new Pipe(PathCreator.Create(start + startPoint, startNormal, end + endPoint, endNormal)));
+                    if (!PathCreator.LastPathSuccess) failed = true;
+                    UpdateMesh();
+                }
+            }
+            finally
+            {
+                temporaryColliders.ForEach(collider => Object.DestroyImmediate(collider));
             }
 
-            temporaryColliders.ForEach(collider => Object.DestroyImmediate(collider));
+
+
 
             return !failed;
         }
@@ -144,14 +152,19 @@ namespace InstantPipes
                 temporaryColliders.Add(CreateTemporaryCollider(pipe.Points[^1], (pipe.Points[^2] - pipe.Points[^1]).normalized));
             }
 
-            foreach (var pipe in pipesCopy)
+            try
             {
-                Pipes.Add(new Pipe(PathCreator.Create(pipe.Points[0], pipe.Points[1] - pipe.Points[0], pipe.Points[^1], pipe.Points[^2] - pipe.Points[^1])));
-                if (!PathCreator.LastPathSuccess) failed = true;
-                UpdateMesh();
+                foreach (var pipe in pipesCopy)
+                {
+                    Pipes.Add(new Pipe(PathCreator.Create(pipe.Points[0], pipe.Points[1] - pipe.Points[0], pipe.Points[^1], pipe.Points[^2] - pipe.Points[^1])));
+                    if (!PathCreator.LastPathSuccess) failed = true;
+                    UpdateMesh();
+                }
             }
-
-            temporaryColliders.ForEach(collider => Object.DestroyImmediate(collider));
+            finally
+            {
+                temporaryColliders.ForEach(collider => Object.DestroyImmediate(collider));
+            }
 
             return !failed;
         }

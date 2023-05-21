@@ -30,20 +30,17 @@ The tool uses A* pathfinding without a predefined grid — by raycasting from a
 Property | Explanation
 :- | :-
 Amount | How many pipes will be created at once; each one will have an individual path.
+Max Iterations | How many points will the algorithm check before giving up.
 Grid Size | The distance between searched points; making it too small can produce bad results.
 Height | How high the first and the last segment of a pipe will be. This value can't be smaller than grid size.
 Chaos | Adds randomness to the pathfinding, making paths twisted and chaotic.
 Straight Priority | Makes the algorithm prefer straight paths over turns.
 Near Obstacle Priority | Makes the pipes stay close to obstacles.
-Max Iterations | How many points will the algorithm check before giving up.
-Auto Regenerate | If turned on, any changes to path properties will make it regenerate.
+
+![image](https://github.com/letharqic/InstantPipes/assets/44412176/10da4542-1708-4d6d-9fca-8fde39c7c4e6)
 
 ### Manual Editing
 
 In the component inspector, select the `Edit` tab. Now you can select any point of any pipe by clicking on it, and then either move it in the scene view or delete the point, delete the entire pipe or insert a new point via buttons in the inspector.
 
 Every pipe is its own submesh, so you can assign separate materials by dragging them into the scene view.
-
-### TODO
-
-- [ ] Images for readme

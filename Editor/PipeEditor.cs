@@ -138,7 +138,7 @@ namespace InstantPipes
             }
             GUI.enabled = true;
 
-            GUI.enabled = _selectedPipeIndex != -1 && _selectedPointsIndexes.Count == 0;
+            GUI.enabled = _selectedPipeIndex != -1 && _selectedPointsIndexes.Count == 1;
             if (GUILayout.Button("Insert a point"))
             {
                 Undo.RecordObject(_generator, "Inserted a point");
@@ -223,7 +223,7 @@ namespace InstantPipes
                     }
 
                     if (_selectedPipeIndex == i && _selectedPointsIndexes.Contains(j)) Handles.color = Color.yellow;
-                    if (Handles.Button(_generator.Pipes[i].Points[j], Quaternion.identity, _generator.Radius * 2, _generator.Radius * 4, Handles.SphereHandleCap))
+                    if (Handles.Button(_generator.Pipes[i].Points[j], Quaternion.identity, _generator.Radius * 2, _generator.Radius * 3, Handles.SphereHandleCap))
                     {
                         if (evt.shift && _selectedPipeIndex == i)
                         {
