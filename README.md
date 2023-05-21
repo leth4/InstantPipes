@@ -2,6 +2,8 @@
 
 An editor tool for procedurally generating pipes by just dragging the cursor from start to end — the pipe will find the path in a customizable way.
 
+![Unity_3wtlMTU9I1](https://github.com/letharqic/InstantPipes/assets/44412176/b1e296dc-efa8-47ba-972d-b82601bbae49)
+
 ## Compatibility
 
 Unity 2021.3 or higher.
