@@ -2,7 +2,7 @@
 
 An editor tool for procedurally generating pipes by just dragging the cursor from start to end — the pipe will find the path in a customizable way.
 
-![Unity_3wtlMTU9I1](https://github.com/letharqic/InstantPipes/assets/44412176/b1e296dc-efa8-47ba-972d-b82601bbae49)
+![Unity_3wtlMTU9I1](https://github.com/letharqic/InstantPipes/assets/44412176/912f3879-1d82-4408-8cef-2698b82608a0)
 
 ## Compatibility
 
@@ -39,7 +39,7 @@ Chaos | Adds randomness to the pathfinding, making paths twisted and chaotic.
 Straight Priority | Makes the algorithm prefer straight paths over turns.
 Near Obstacle Priority | Makes the pipes stay close to obstacles.
 
-![image](https://github.com/letharqic/InstantPipes/assets/44412176/10da4542-1708-4d6d-9fca-8fde39c7c4e6)
+![image](https://github.com/letharqic/InstantPipes/assets/44412176/a076dcf6-21d2-46b1-80c9-70cdbd59b00e)
 
 ### Manual Editing
 
