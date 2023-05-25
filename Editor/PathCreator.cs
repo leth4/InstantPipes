@@ -49,6 +49,7 @@ namespace InstantPipes
         {
             var toSearch = new List<Point> { start };
             var visited = new List<Vector3>();
+            var priorityFactor = start.GetDistanceTo(target) / 100;
 
             Dictionary<Vector3, Point> pointDictionary = new();
 
@@ -98,12 +99,12 @@ namespace InstantPipes
 
                     if (current.Connection != null && (current.Connection.Position - current.Position).normalized != (current.Connection.Position - neighbor.Position).normalized)
                     {
-                        costToNeighbor += StraightPathPriority;
+                        costToNeighbor += StraightPathPriority * priorityFactor;
                     }
 
-                    costToNeighbor += Random.Range(-Chaos, Chaos);
+                    costToNeighbor += Random.Range(-Chaos, Chaos) * priorityFactor;
 
-                    costToNeighbor += neighbor.GetDistanceToNearestObstacle() * NearObstaclesPriority / 10;
+                    costToNeighbor += NearObstaclesPriority * neighbor.GetDistanceToNearestObstacle() * priorityFactor / 10;
 
                     if (!toSearch.Contains(neighbor) || costToNeighbor < neighbor.G)
                     {
@@ -112,7 +113,7 @@ namespace InstantPipes
 
                         if (!toSearch.Contains(neighbor))
                         {
-                            neighbor.H = neighbor.GetDistance(target);
+                            neighbor.H = neighbor.GetDistanceTo(target);
                             toSearch.Add(neighbor);
                         }
                     }
@@ -154,7 +155,7 @@ namespace InstantPipes
                 Neighbors = new();
             }
 
-            public float GetDistance(Point other)
+            public float GetDistanceTo(Point other)
             {
                 var distance = Vector3.Distance(other.Position, Position);
                 return distance * 10;
