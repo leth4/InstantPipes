@@ -21,7 +21,7 @@ Add the package to your project via the [Package Manager](https://docs.unity3d.c
 2. Add a `Pipe Generator` component.
 3. Select a material for the `Material` property.
 
-Ctrl+Z works with all actions. After you're done, you can just delete the component.
+Ctrl+Z works with all actions. When you're commited to the pipes, you can just remove the component, the mesh will stay.
 
 ### Using pathfinding
 
@@ -43,6 +43,6 @@ Near Obstacle Priority | Makes the pipes stay close to obstacles.
 
 ### Manual Editing
 
-In the component inspector, select the `Edit` tab. Now you can select any point of any pipe by clicking on it, and then either move it in the scene view or delete the point, delete the entire pipe or insert a new point via buttons in the inspector.
+In the component inspector, select the `Edit` tab. Now you can select any point of any pipe by clicking on it, and then either move it in the scene view or delete the point, delete the entire pipe or insert a new point via buttons in the inspector. Hold shift to select multiple points.
 
 Every pipe is a separate submesh, so you can assign separate materials by dragging them into the scene view.
