@@ -25,6 +25,7 @@ namespace InstantPipes
         public int PipesAmount = 1;
 
         public Material Material;
+        public float RingsUVScale = 1;
 
         private Renderer _renderer;
         private MeshCollider _collider;

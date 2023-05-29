@@ -272,7 +272,7 @@ namespace InstantPipes
                     _normals.Add(point.LocalToWorldVector(Vector3.forward));
                 else
                     _normals.Add(point.LocalToWorldVector(Vector3.back));
-                _uvs.Add(planeUVs[i]);
+                _uvs.Add(planeUVs[i] * _generator.RingsUVScale);
             }
 
             for (int i = 1; i < edges - 1; i++)

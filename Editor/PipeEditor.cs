@@ -49,6 +49,7 @@ namespace InstantPipes
             var radius = EditorGUILayout.FloatField("Radius", _generator.Radius);
             var curvature = EditorGUILayout.Slider("Curvature", _generator.Curvature, 0.01f, _generator.MaxCurvature);
             var material = (Material)EditorGUILayout.ObjectField("Material", _generator.Material, typeof(Material), false);
+            var ringsUVScale = EditorGUILayout.FloatField("Rings UV Scale", _generator.RingsUVScale);
             EditorGUILayout.Space(10);
 
             var hasRings = EditorGUILayout.ToggleLeft("Rings", _generator.HasRings, EditorStyles.boldLabel);
@@ -79,6 +80,7 @@ namespace InstantPipes
                 Undo.RecordObject(_generator, "Set Field Value");
 
                 _generator.Material = material;
+                _generator.RingsUVScale = Mathf.Max(0.01f, ringsUVScale);
                 _generator.Radius = Mathf.Max(0.01f, radius);
                 _generator.Curvature = Mathf.Clamp(curvature, 0.01f, _generator.MaxCurvature);
                 _generator.HasRings = hasRings;
