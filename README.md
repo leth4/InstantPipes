@@ -21,6 +21,8 @@ Add the package to your project via the [Package Manager](https://docs.unity3d.c
 2. Add a `Pipe Generator` component.
 3. Select a material for the `Material` property.
 
+**! If your pipes appear squashed, toggle and re-toggle rings, that will fix it. Looking into it!**
+
 Ctrl+Z works with all actions. When you're commited to the pipes, you can just remove the component, the mesh will stay.
 
 ### Pipes Settings
