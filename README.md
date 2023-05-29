@@ -23,6 +23,12 @@ Add the package to your project via the [Package Manager](https://docs.unity3d.c
 
 Ctrl+Z works with all actions. When you're commited to the pipes, you can just remove the component, the mesh will stay.
 
+### Pipes Settings
+
+- `Curvature` changes the length of the curved parts, making pipes appear more or less curvy. Note that it applies after pathfinding, so in some cases high curvature value can make pipes intersect.
+- `Edges` property selects how many edges the pipes will have, and `Segments` is the amount of subdivisions in curved parts. 
+- You can toggle `Rings` and `End Caps` and separately set up their radius and thickness.
+
 ### Using pathfinding
 
 In the component inspector, select the `Create` tab. Now in the scene view start dragging your cursor where you want the pipe to start, end let go where you want it to end; a pipe will appear.
