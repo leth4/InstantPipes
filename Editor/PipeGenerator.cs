@@ -108,10 +108,7 @@ namespace InstantPipes
             {
                 temporaryColliders.ForEach(collider => Object.DestroyImmediate(collider));
             }
-
-
-
-
+            
             return !failed;
         }
 

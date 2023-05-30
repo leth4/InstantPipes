@@ -41,6 +41,7 @@ Property | Explanation
 :- | :-
 Amount | How many pipes will be created at once; each one will have an individual path.
 Max Iterations | How many points will the algorithm check before giving up.
+Grid Y Angle | Rotates the Y axis of the pathfinding grid that every pipes have to follow.
 Grid Size | The distance between searched points; making it too small can produce bad results.
 Height | How high the first and the last segment of a pipe will be. This value can't be smaller than grid size.
 Chaos | Adds randomness to the pathfinding, making paths twisted and chaotic.
@@ -51,6 +52,12 @@ Near Obstacle Priority | Makes the pipes stay close to obstacles.
 
 ### Manual Editing
 
-In the component inspector, select the `Edit` tab. Now you can select any point of any pipe by clicking on it, and then either move it in the scene view or delete the point, delete the entire pipe or insert a new point via buttons in the inspector. Hold shift to select multiple points.
+In the component inspector, select the `Edit` tab. Select one of the points in the scene view by clicking on it, and then you can:
+- Move the selected points in the scene view
+- Input the exact positions for the selected points in the inspector
+- Delete the point or the entire pipe via a button in the inspector
+- Insert a new point via a button in the inspector
+
+Hold `shift` to select multiple points. Press `A` to select every point of the selected pipe.
 
 Every pipe is a separate submesh, so you can assign separate materials by dragging them into the scene view.
