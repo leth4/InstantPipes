@@ -21,7 +21,6 @@ namespace InstantPipes
         private List<int> _selectedPointsIndexes = new();
         private Vector3 _positionHandle;
 
-
         private void OnEnable()
         {
             _generator = (PipeGenerator)target;
@@ -199,6 +198,7 @@ namespace InstantPipes
 
             var maxIterations = EditorGUILayout.IntField("Max Iterations", _generator.PathCreator.MaxIterations);
             var pathGridSize = EditorGUILayout.FloatField("Grid Size", _generator.PathCreator.GridSize);
+            var gridRotation = EditorGUILayout.FloatField("Grid Y Rotation", _generator.PathCreator.GridRotationY);
             var pathHeight = EditorGUILayout.FloatField("Height", _generator.PathCreator.Height);
             var chaos = EditorGUILayout.Slider("Chaos", _generator.PathCreator.Chaos, 0, 100);
             var straightPriority = EditorGUILayout.Slider("Straight Proirity", _generator.PathCreator.StraightPathPriority, 0, 100);
@@ -209,6 +209,7 @@ namespace InstantPipes
                 Undo.RecordObject(_generator, "Set Field Value");
 
                 _generator.PathCreator.GridSize = Mathf.Clamp(pathGridSize, _generator.PathCreator.Radius, Mathf.Infinity);
+                _generator.PathCreator.GridRotationY = gridRotation;
                 _generator.PathCreator.Height = Mathf.Clamp(pathHeight, pathGridSize, Mathf.Infinity);
                 _generator.PathCreator.StraightPathPriority = straightPriority;
                 _generator.PathCreator.NearObstaclesPriority = nearObstaclePriority;

@@ -7,7 +7,8 @@ namespace InstantPipes
     public class PathCreator
     {
         public float Height = 5;
-        public float Radius;
+        public float GridRotationY = 0;
+        public float Radius = 1;
         public float GridSize = 3;
         public float Chaos = 0;
         public float StraightPathPriority = 10;
@@ -81,7 +82,7 @@ namespace InstantPipes
                     return path;
                 }
 
-                var neighborPositions = current.GetNeighbors(GridSize, Radius);
+                var neighborPositions = current.GetNeighbors(GridSize, Radius, Quaternion.AngleAxis(GridRotationY, Vector3.up));
                 foreach (var position in neighborPositions)
                 {
                     if (!pointDictionary.ContainsKey(position))
@@ -176,13 +177,16 @@ namespace InstantPipes
                 return minDistance;
             }
 
-            public List<Vector3> GetNeighbors(float gridSize, float radius)
+            public List<Vector3> GetNeighbors(float gridSize, float radius, Quaternion rotation)
             {
                 var list = new List<Vector3>();
 
                 foreach (var direction in _directions)
-                    if (!Physics.SphereCast(Position, radius, direction, out RaycastHit hit, gridSize + radius))
-                        list.Add(Position + direction * gridSize);
+                {
+                    var rotatedDirection = rotation * direction;
+                    if (!Physics.SphereCast(Position, radius, rotatedDirection, out RaycastHit hit, gridSize + radius))
+                        list.Add(Position + rotatedDirection * gridSize);
+                }
 
                 return list;
             }
