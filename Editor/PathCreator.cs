@@ -104,7 +104,11 @@ namespace InstantPipes
 
                     costToNeighbor += Random.Range(-Chaos, Chaos) * priorityFactor;
 
-                    costToNeighbor += NearObstaclesPriority * neighbor.GetDistanceToNearestObstacle() * priorityFactor / 10;
+                    if (NearObstaclesPriority != 0)
+                    {
+                        costToNeighbor += NearObstaclesPriority * neighbor.GetDistanceToNearestObstacle() * priorityFactor / 10;
+                    }
+
 
                     if (!toSearch.Contains(neighbor) || costToNeighbor < neighbor.G)
                     {

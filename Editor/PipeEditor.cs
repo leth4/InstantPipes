@@ -121,6 +121,28 @@ namespace InstantPipes
 
         private void EditGUI()
         {
+            _selectedPointsIndexes.Sort();
+            if (_selectedPipeIndex != -1 && _selectedPointsIndexes.Count != 0)
+            {
+                EditorGUI.BeginChangeCheck();
+                var positions = new Vector3[_generator.Pipes[_selectedPipeIndex].Points.Count];
+                foreach (var index in _selectedPointsIndexes)
+                {
+                    positions[index] = DrawVectorField($"{index}", _generator.Pipes[_selectedPipeIndex].Points[index]);
+                }
+                if (EditorGUI.EndChangeCheck())
+                {
+                    Undo.RecordObject(_generator, "Moved a point");
+                    foreach (var index in _selectedPointsIndexes)
+                    {
+                        _generator.Pipes[_selectedPipeIndex].Points[index] = positions[index];
+                    }
+                    _generator.UpdateMesh();
+                    SetHandlePosition();
+                }
+                GUILayout.Space(10);
+            }
+
             GUI.enabled = _selectedPipeIndex != -1;
             if (GUILayout.Button("Delete Selected Pipe"))
             {
@@ -149,6 +171,24 @@ namespace InstantPipes
                 Repaint();
             }
             GUI.enabled = true;
+        }
+
+        private Vector3 DrawVectorField(string label, Vector3 value)
+        {
+            var defaultLabelWidth = EditorGUIUtility.labelWidth;
+            EditorGUIUtility.labelWidth = 12;
+            var vector = new Vector3();
+
+            GUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(label, GUILayout.Width(30));
+            GUILayout.Space(10);
+            vector.x = EditorGUILayout.FloatField("X", value.x);
+            vector.y = EditorGUILayout.FloatField("Y", value.y);
+            vector.z = EditorGUILayout.FloatField("Z", value.z);
+            GUILayout.EndHorizontal();
+
+            EditorGUIUtility.labelWidth = defaultLabelWidth;
+            return vector;
         }
 
         private void PathGUI()
