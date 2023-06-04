@@ -225,10 +225,10 @@ namespace InstantPipes
 
             if (isFirst)
                 point.Pos -= point.LocalToWorldVector(UnityEngine.Vector3.forward) * (_generator.CapThickness + _generator.CapOffset);
-            else if (!isLast)
-                point.Pos -= point.LocalToWorldVector(UnityEngine.Vector3.forward) * (_generator.RingThickness / 2 + _generator.CapOffset);
+            else if (isLast)
+                point.Pos += point.LocalToWorldVector(UnityEngine.Vector3.forward) * _generator.CapOffset;
             else
-                point.Pos -= point.LocalToWorldVector(UnityEngine.Vector3.forward) * _generator.CapOffset;
+                point.Pos -= point.LocalToWorldVector(UnityEngine.Vector3.forward) * _generator.RingThickness / 2;
 
             var radius = (isLast || isFirst) ? _generator.CapRadius + _generator.Radius : _generator.RingRadius + _generator.Radius;
             var uv = (isLast || isFirst) ? _generator.CapThickness : _generator.RingThickness;

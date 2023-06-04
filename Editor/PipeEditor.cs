@@ -70,7 +70,7 @@ namespace InstantPipes
             {
                 capRadius = EditorGUILayout.Slider("Radius", _generator.CapRadius, 0, radius);
                 capThickness = EditorGUILayout.Slider("Thickness", _generator.CapThickness, 0, radius);
-                capOffset = EditorGUILayout.Slider("Offset", _generator.CapOffset, 0, radius);
+                capOffset = EditorGUILayout.Slider("Offset", _generator.CapOffset, 0, radius * 4);
             }
             EditorGUILayout.Space(10);
 
@@ -93,7 +93,7 @@ namespace InstantPipes
                 _generator.HasCaps = hasCaps;
                 _generator.CapRadius = Mathf.Clamp(capRadius, 0, radius);
                 _generator.CapThickness = Mathf.Clamp(capThickness, 0, radius);
-                _generator.CapOffset = Mathf.Clamp(capOffset, 0, radius);
+                _generator.CapOffset = Mathf.Clamp(capOffset, 0, radius * 4);
                 _generator.EdgeCount = edgeCount;
                 _generator.CurvedSegmentCount = segmentCount;
 
