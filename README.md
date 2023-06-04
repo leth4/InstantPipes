@@ -21,7 +21,7 @@ Add the package to your project via the [Package Manager](https://docs.unity3d.c
 2. Add a `Pipe Generator` component.
 3. Select a material for the `Material` property.
 
-**! If your pipes appear squashed, toggle and re-toggle rings, that will fix it. Looking into it!**
+If you're facing problems, visit the troubleshooting section.
 
 Ctrl+Z works with all actions. When you're commited to the pipes, you can just remove the component, the mesh will stay.
 
@@ -61,3 +61,22 @@ In the component inspector, select the `Edit` tab. Select one of the points in t
 Hold `shift` to select multiple points. Press `A` to select every point of the selected pipe.
 
 Every pipe is a separate submesh, so you can assign separate materials by dragging them into the scene view.
+
+## Troubleshooting
+
+> Pipes appear squashed
+
+- Toggle and re-toggle rings, that should fix it. Will hopefully find a proper fix soon.
+
+> Dragging my cursor doesn't do anything
+
+- Make sure you have the `Create` tab selected
+- Make sure you're pointing at a surface with a collider
+- Make sure Gizmos are enabled
+- If nothing else helped, try resetting the editor layout to default
+
+> Pipes can't find a way
+
+- Set the `Iterations` higher, that will make the algorithm try for longer before giving up
+- Set the `Grid Size` higher, this way the algorithm can find a way with less iterations
+- Tone down the `Chaos`, `Straight Priority` and `Near Obstacle Priority` values, those make it harder to find a way
