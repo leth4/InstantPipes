@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using UnityEngine;
 
 namespace InstantPipes
@@ -7,19 +8,19 @@ namespace InstantPipes
     [System.Serializable]
     public class Pipe
     {
-        public List<Vector3> Points;
+        public List<UnityEngine.Vector3> Points;
 
-        private List<Vector3> _verts;
-        private List<Vector3> _normals;
-        private List<Vector2> _uvs;
+        private List<UnityEngine.Vector3> _verts;
+        private List<UnityEngine.Vector3> _normals;
+        private List<System.Numerics.Vector2> _uvs;
         private List<int> _triIndices;
         private List<BezierPoint> _bezierPoints;
         private PipeGenerator _generator;
 
         private float _currentAngleOffset;
-        private Quaternion _previousRotation;
+        private UnityEngine.Quaternion _previousRotation;
 
-        public Pipe(List<Vector3> points)
+        public Pipe(List<UnityEngine.Vector3> points)
         {
             Points = points;
         }
@@ -29,7 +30,7 @@ namespace InstantPipes
             var maxDistance = 0f;
             for (int i = 1; i < Points.Count; i++)
             {
-                maxDistance = Mathf.Max(maxDistance, Vector3.Distance(Points[i], Points[i - 1]));
+                maxDistance = Mathf.Max(maxDistance, UnityEngine.Vector3.Distance(Points[i], Points[i - 1]));
             }
             return maxDistance;
         }
@@ -43,7 +44,9 @@ namespace InstantPipes
             var ringPoints = new List<int>();
 
             var direction = (Points[0] - Points[1]).normalized;
-            var rotation = (direction != Vector3.zero) ? Quaternion.LookRotation(direction, Vector3.up) : Quaternion.identity;
+            var rotation = (direction != UnityEngine.Vector3.zero)
+                ? UnityEngine.Quaternion.LookRotation(direction, UnityEngine.Vector3.up)
+                : UnityEngine.Quaternion.identity;
             _previousRotation = rotation;
             _bezierPoints.Add(new BezierPoint(Points[0], rotation));
 
@@ -86,9 +89,9 @@ namespace InstantPipes
 
         private void ClearMeshInfo()
         {
-            _verts = new List<Vector3>();
-            _normals = new List<Vector3>();
-            _uvs = new List<Vector2>();
+            _verts = new List<UnityEngine.Vector3>();
+            _normals = new List<UnityEngine.Vector3>();
+            _uvs = new List<UnistyEngine.Vector2>();
             _triIndices = new List<int>();
             _bezierPoints = new List<BezierPoint>();
         }
@@ -221,9 +224,11 @@ namespace InstantPipes
             List<Vector2> planeUVs = new List<Vector2>();
 
             if (isFirst)
-                point.Pos -= point.LocalToWorldVector(Vector3.forward) * _generator.CapThickness;
+                point.Pos -= point.LocalToWorldVector(Vector3.forward) * (_generator.CapThickness + _generator.CapOffset);
             else if (!isLast)
-                point.Pos -= point.LocalToWorldVector(Vector3.forward) * _generator.RingThickness / 2;
+                point.Pos -= point.LocalToWorldVector(Vector3.forward) * (_generator.RingThickness / 2 + _generator.CapOffset);
+            else
+                point.Pos -= point.LocalToWorldVector(Vector3.forward) * _generator.CapOffset;
 
             var radius = (isLast || isFirst) ? _generator.CapRadius + _generator.Radius : _generator.RingRadius + _generator.Radius;
             var uv = (isLast || isFirst) ? _generator.CapThickness : _generator.RingThickness;
@@ -288,17 +293,17 @@ namespace InstantPipes
 
         private struct BezierPoint
         {
-            public Vector3 Pos;
-            public Quaternion Rot;
+            public UnityEngine.Vector3 Pos;
+            public UnityEngine.Quaternion Rot;
 
-            public BezierPoint(Vector3 pos, Quaternion rot)
+            public BezierPoint(UnityEngine.Vector3 pos, UnityEngine.Quaternion rot)
             {
                 this.Pos = pos;
                 this.Rot = rot;
             }
 
-            public Vector3 LocalToWorldPosition(Vector3 localSpacePos) => Rot * localSpacePos + Pos;
-            public Vector3 LocalToWorldVector(Vector3 localSpacePos) => Rot * localSpacePos;
+            public UnityEngine.Vector3 LocalToWorldPosition(UnityEngine.Vector3 localSpacePos) => Rot * localSpacePos + Pos;
+            public UnityEngine.Vector3 LocalToWorldVector(UnityEngine.Vector3 localSpacePos) => Rot * localSpacePos;
         }
     }
 }

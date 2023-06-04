@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using System;
 
 namespace InstantPipes
 {
@@ -64,10 +65,12 @@ namespace InstantPipes
 
             var hasCaps = EditorGUILayout.ToggleLeft("End Caps", _generator.HasCaps, EditorStyles.boldLabel);
             float capRadius = _generator.CapRadius, capThickness = _generator.CapThickness;
+            float capOffset = _generator.CapOffset;
             if (_generator.HasCaps)
             {
                 capRadius = EditorGUILayout.Slider("Radius", _generator.CapRadius, 0, radius);
                 capThickness = EditorGUILayout.Slider("Thickness", _generator.CapThickness, 0, radius);
+                capOffset = EditorGUILayout.Slider("Offset", _generator.CapOffset, 0, radius);
             }
             EditorGUILayout.Space(10);
 
@@ -90,6 +93,7 @@ namespace InstantPipes
                 _generator.HasCaps = hasCaps;
                 _generator.CapRadius = Mathf.Clamp(capRadius, 0, radius);
                 _generator.CapThickness = Mathf.Clamp(capThickness, 0, radius);
+                _generator.CapOffset = Mathf.Clamp(capOffset, 0, radius);
                 _generator.EdgeCount = edgeCount;
                 _generator.CurvedSegmentCount = segmentCount;
 
