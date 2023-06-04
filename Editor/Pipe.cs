@@ -12,7 +12,7 @@ namespace InstantPipes
 
         private List<UnityEngine.Vector3> _verts;
         private List<UnityEngine.Vector3> _normals;
-        private List<System.Numerics.Vector2> _uvs;
+        private List<UnityEngine.Vector2> _uvs;
         private List<int> _triIndices;
         private List<BezierPoint> _bezierPoints;
         private PipeGenerator _generator;
@@ -91,14 +91,14 @@ namespace InstantPipes
         {
             _verts = new List<UnityEngine.Vector3>();
             _normals = new List<UnityEngine.Vector3>();
-            _uvs = new List<UnistyEngine.Vector2>();
+            _uvs = new List<UnityEngine.Vector2>();
             _triIndices = new List<int>();
             _bezierPoints = new List<BezierPoint>();
         }
 
         private BezierPoint GetBezierPoint(float t, int x)
         {
-            Vector3 prev, next;
+            UnityEngine.Vector3 prev, next;
 
             if ((Points[x] - Points[x - 1]).magnitude > _generator.Curvature * 2 + _generator.RingThickness)
                 prev = Points[x] - (Points[x] - Points[x - 1]).normalized * _generator.Curvature;
@@ -126,26 +126,26 @@ namespace InstantPipes
                     next = Points[x + 1] + (Points[x] - Points[x + 1]).normalized * _generator.RingThickness * 2.5f;
             }
 
-            Vector3 a = Vector3.Lerp(prev, Points[x], t);
-            Vector3 b = Vector3.Lerp(Points[x], next, t);
-            var position = Vector3.Lerp(a, b, t);
+            UnityEngine.Vector3 a = UnityEngine.Vector3.Lerp(prev, Points[x], t);
+            UnityEngine.Vector3 b = UnityEngine.Vector3.Lerp(Points[x], next, t);
+            var position = UnityEngine.Vector3.Lerp(a, b, t);
 
-            Vector3 aNext = Vector3.LerpUnclamped(prev, Points[x], t + 0.001f);
-            Vector3 bNext = Vector3.LerpUnclamped(Points[x], next, t + 0.001f);
+            UnityEngine.Vector3 aNext = UnityEngine.Vector3.LerpUnclamped(prev, Points[x], t + 0.001f);
+            UnityEngine.Vector3 bNext = UnityEngine.Vector3.LerpUnclamped(Points[x], next, t + 0.001f);
 
-            var tangent = Vector3.Cross(a - b, aNext - bNext);
-            var rotation = (a != b) ? Quaternion.LookRotation((a - b).normalized, tangent) : Quaternion.identity;
+            var tangent = UnityEngine.Vector3.Cross(a - b, aNext - bNext);
+            var rotation = (a != b) ? UnityEngine.Quaternion.LookRotation((a - b).normalized, tangent) : UnityEngine.Quaternion.identity;
 
             // Rotate new tangent along the forward axis to match the previous part
 
             if (t == 0)
             {
-                _currentAngleOffset = Quaternion.Angle(_previousRotation, rotation);
-                var offsetRotation = Quaternion.AngleAxis(_currentAngleOffset, Vector3.forward);
-                if (Quaternion.Angle(rotation * offsetRotation, _previousRotation) > 0)
+                _currentAngleOffset = UnityEngine.Quaternion.Angle(_previousRotation, rotation);
+                var offsetRotation = UnityEngine.Quaternion.AngleAxis(_currentAngleOffset, UnityEngine.Vector3.forward);
+                if (UnityEngine.Quaternion.Angle(rotation * offsetRotation, _previousRotation) > 0)
                     _currentAngleOffset *= -1;
             }
-            rotation *= Quaternion.AngleAxis(_currentAngleOffset, Vector3.forward);
+            rotation *= UnityEngine.Quaternion.AngleAxis(_currentAngleOffset, UnityEngine.Vector3.forward);
 
             _previousRotation = rotation;
             return new BezierPoint(position, rotation);
@@ -165,9 +165,9 @@ namespace InstantPipes
 
                 for (int edge = 0; edge < _generator.EdgeCount; edge++)
                 {
-                    _uvs.Add(new Vector2(edge / (float)_generator.EdgeCount, currentUV * length));
+                    _uvs.Add(new UnityEngine.Vector2(edge / (float)_generator.EdgeCount, currentUV * length));
                 }
-                _uvs.Add(new Vector2(1, currentUV * length));
+                _uvs.Add(new UnityEngine.Vector2(1, currentUV * length));
             }
         }
 
@@ -179,7 +179,7 @@ namespace InstantPipes
                 {
                     float t = i / (float)_generator.EdgeCount;
                     float angRad = t * 6.2831853f;
-                    Vector3 direction = new Vector3(MathF.Sin(angRad), Mathf.Cos(angRad), 0);
+                    UnityEngine.Vector3 direction = new UnityEngine.Vector3(MathF.Sin(angRad), Mathf.Cos(angRad), 0);
                     _normals.Add(_bezierPoints[point].LocalToWorldVector(direction.normalized));
                     _verts.Add(_bezierPoints[point].LocalToWorldPosition(direction * _generator.Radius));
                 }
@@ -221,14 +221,14 @@ namespace InstantPipes
             bool isFirst = (point.Pos == _bezierPoints[0].Pos);
             bool isLast = (point.Pos == _bezierPoints[^1].Pos);
 
-            List<Vector2> planeUVs = new List<Vector2>();
+            List<UnityEngine.Vector2> planeUVs = new List<UnityEngine.Vector2>();
 
             if (isFirst)
-                point.Pos -= point.LocalToWorldVector(Vector3.forward) * (_generator.CapThickness + _generator.CapOffset);
+                point.Pos -= point.LocalToWorldVector(UnityEngine.Vector3.forward) * (_generator.CapThickness + _generator.CapOffset);
             else if (!isLast)
-                point.Pos -= point.LocalToWorldVector(Vector3.forward) * (_generator.RingThickness / 2 + _generator.CapOffset);
+                point.Pos -= point.LocalToWorldVector(UnityEngine.Vector3.forward) * (_generator.RingThickness / 2 + _generator.CapOffset);
             else
-                point.Pos -= point.LocalToWorldVector(Vector3.forward) * _generator.CapOffset;
+                point.Pos -= point.LocalToWorldVector(UnityEngine.Vector3.forward) * _generator.CapOffset;
 
             var radius = (isLast || isFirst) ? _generator.CapRadius + _generator.Radius : _generator.RingRadius + _generator.Radius;
             var uv = (isLast || isFirst) ? _generator.CapThickness : _generator.RingThickness;
@@ -239,21 +239,21 @@ namespace InstantPipes
                 {
                     float t = i / (float)_generator.EdgeCount;
                     float angRad = t * 6.2831853f;
-                    Vector3 direction = new Vector3(MathF.Sin(angRad), Mathf.Cos(angRad), 0);
+                    UnityEngine.Vector3 direction = new UnityEngine.Vector3(MathF.Sin(angRad), Mathf.Cos(angRad), 0);
                     _normals.Add(point.LocalToWorldVector(direction.normalized));
                     _verts.Add(point.LocalToWorldPosition(direction * radius));
-                    _uvs.Add(new Vector2(t, uv * p));
+                    _uvs.Add(new UnityEngine.Vector2(t, uv * p));
                     planeUVs.Add(direction);
                 }
 
                 _normals.Add(_normals[^_generator.EdgeCount]);
                 _verts.Add(_verts[^_generator.EdgeCount]);
-                _uvs.Add(new Vector2(1, uv * p));
+                _uvs.Add(new UnityEngine.Vector2(1, uv * p));
                 planeUVs.Add(planeUVs[^1]);
                 if (isLast || isFirst)
-                    point.Pos += point.LocalToWorldVector(Vector3.forward) * _generator.CapThickness;
+                    point.Pos += point.LocalToWorldVector(UnityEngine.Vector3.forward) * _generator.CapThickness;
                 else
-                    point.Pos += point.LocalToWorldVector(Vector3.forward) * _generator.RingThickness;
+                    point.Pos += point.LocalToWorldVector(UnityEngine.Vector3.forward) * _generator.RingThickness;
             }
 
             var edges = _generator.EdgeCount + 1;
@@ -274,9 +274,9 @@ namespace InstantPipes
             {
                 _verts.Add(_verts[^(planeUVs.Count)]);
                 if (i > _generator.EdgeCount)
-                    _normals.Add(point.LocalToWorldVector(Vector3.forward));
+                    _normals.Add(point.LocalToWorldVector(UnityEngine.Vector3.forward));
                 else
-                    _normals.Add(point.LocalToWorldVector(Vector3.back));
+                    _normals.Add(point.LocalToWorldVector(UnityEngine.Vector3.back));
                 _uvs.Add(planeUVs[i] * _generator.RingsUVScale);
             }
 
