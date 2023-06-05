@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+//#if UNITY_EDITOR
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -59,7 +59,7 @@ namespace InstantPipes
             if (_generator.HasRings)
             {
                 ringRadius = EditorGUILayout.Slider("Radius", _generator.RingRadius, 0, radius);
-                ringThickness = EditorGUILayout.Slider("Thickness", _generator.RingThickness, 0, radius);
+                ringThickness = EditorGUILayout.Slider("Thickness", _generator.RingThickness, 0, radius * 4);
                 EditorGUILayout.Space(10);
             }
 
@@ -69,7 +69,7 @@ namespace InstantPipes
             if (_generator.HasCaps)
             {
                 capRadius = EditorGUILayout.Slider("Radius", _generator.CapRadius, 0, radius);
-                capThickness = EditorGUILayout.Slider("Thickness", _generator.CapThickness, 0, radius);
+                capThickness = EditorGUILayout.Slider("Thickness", _generator.CapThickness, 0, radius * 4);
                 capOffset = EditorGUILayout.Slider("Offset", _generator.CapOffset, 0, radius * 4);
             }
             EditorGUILayout.Space(10);
@@ -89,10 +89,10 @@ namespace InstantPipes
                 _generator.Curvature = Mathf.Clamp(curvature, 0.01f, _generator.MaxCurvature);
                 _generator.HasRings = hasRings;
                 _generator.RingRadius = Mathf.Clamp(ringRadius, 0, radius);
-                _generator.RingThickness = Mathf.Clamp(ringThickness, 0, radius);
+                _generator.RingThickness = Mathf.Clamp(ringThickness, 0, radius * 4);
                 _generator.HasCaps = hasCaps;
                 _generator.CapRadius = Mathf.Clamp(capRadius, 0, radius);
-                _generator.CapThickness = Mathf.Clamp(capThickness, 0, radius);
+                _generator.CapThickness = Mathf.Clamp(capThickness, 0, radius * 4);
                 _generator.CapOffset = Mathf.Clamp(capOffset, 0, radius * 4);
                 _generator.EdgeCount = edgeCount;
                 _generator.CurvedSegmentCount = segmentCount;
@@ -369,4 +369,4 @@ namespace InstantPipes
     }
 }
 
-#endif
+//#endif
