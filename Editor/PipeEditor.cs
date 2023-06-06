@@ -51,6 +51,7 @@ namespace InstantPipes
             var curvature = EditorGUILayout.Slider("Curvature", _generator.Curvature, 0.01f, _generator.MaxCurvature);
             var material = (Material)EditorGUILayout.ObjectField("Material", _generator.Material, typeof(Material), false);
             var ringsUVScale = EditorGUILayout.FloatField("Rings UV Scale", _generator.RingsUVScale);
+            var maxEndCapOffset = Mathf.Min(_generator.PathCreator.Height, _generator.PathCreator.GridSize) - _generator.CapThickness;
             EditorGUILayout.Space(10);
 
             var hasRings = EditorGUILayout.ToggleLeft("Rings", _generator.HasRings, EditorStyles.boldLabel);
@@ -58,7 +59,7 @@ namespace InstantPipes
             if (_generator.HasRings)
             {
                 ringRadius = EditorGUILayout.Slider("Radius", _generator.RingRadius, 0, radius);
-                ringThickness = EditorGUILayout.Slider("Thickness", _generator.RingThickness, 0, radius * 4);
+                ringThickness = EditorGUILayout.Slider("Thickness", _generator.RingThickness, 0, radius);
                 EditorGUILayout.Space(10);
             }
 
@@ -68,8 +69,8 @@ namespace InstantPipes
             if (_generator.HasCaps)
             {
                 capRadius = EditorGUILayout.Slider("Radius", _generator.CapRadius, 0, radius);
-                capThickness = EditorGUILayout.Slider("Thickness", _generator.CapThickness, 0, radius * 4);
-                capOffset = EditorGUILayout.Slider("Offset", _generator.CapOffset, 0, radius * 4);
+                capThickness = EditorGUILayout.Slider("Thickness", _generator.CapThickness, 0, radius);
+                capOffset = EditorGUILayout.Slider("Offset", _generator.CapOffset, 0, maxEndCapOffset);
             }
             EditorGUILayout.Space(10);
 
@@ -88,11 +89,11 @@ namespace InstantPipes
                 _generator.Curvature = Mathf.Clamp(curvature, 0.01f, _generator.MaxCurvature);
                 _generator.HasRings = hasRings;
                 _generator.RingRadius = Mathf.Clamp(ringRadius, 0, radius);
-                _generator.RingThickness = Mathf.Clamp(ringThickness, 0, radius * 4);
+                _generator.RingThickness = Mathf.Clamp(ringThickness, 0, radius);
                 _generator.HasCaps = hasCaps;
                 _generator.CapRadius = Mathf.Clamp(capRadius, 0, radius);
-                _generator.CapThickness = Mathf.Clamp(capThickness, 0, radius * 4);
-                _generator.CapOffset = Mathf.Clamp(capOffset, 0, radius * 4);
+                _generator.CapThickness = Mathf.Clamp(capThickness, 0, radius);
+                _generator.CapOffset = Mathf.Clamp(capOffset, 0, maxEndCapOffset);
                 _generator.EdgeCount = edgeCount;
                 _generator.CurvedSegmentCount = segmentCount;
 
