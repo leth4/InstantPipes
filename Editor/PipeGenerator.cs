@@ -21,6 +21,7 @@ namespace InstantPipes
         public bool HasCaps;
         public float CapThickness = 1;
         public float CapRadius = 1.3f;
+        public float CapOffset = 0f;
 
         public int PipesAmount = 1;
 

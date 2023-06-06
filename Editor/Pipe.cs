@@ -43,7 +43,9 @@ namespace InstantPipes
             var ringPoints = new List<int>();
 
             var direction = (Points[0] - Points[1]).normalized;
-            var rotation = (direction != Vector3.zero) ? Quaternion.LookRotation(direction, Vector3.up) : Quaternion.identity;
+            var rotation = (direction != Vector3.zero)
+                ? Quaternion.LookRotation(direction, Vector3.up)
+                : Quaternion.identity;
             _previousRotation = rotation;
             _bezierPoints.Add(new BezierPoint(Points[0], rotation));
 
@@ -221,8 +223,10 @@ namespace InstantPipes
             List<Vector2> planeUVs = new List<Vector2>();
 
             if (isFirst)
-                point.Pos -= point.LocalToWorldVector(Vector3.forward) * _generator.CapThickness;
-            else if (!isLast)
+                point.Pos -= point.LocalToWorldVector(Vector3.forward) * (_generator.CapThickness + _generator.CapOffset);
+            else if (isLast)
+                point.Pos += point.LocalToWorldVector(Vector3.forward) * _generator.CapOffset;
+            else
                 point.Pos -= point.LocalToWorldVector(Vector3.forward) * _generator.RingThickness / 2;
 
             var radius = (isLast || isFirst) ? _generator.CapRadius + _generator.Radius : _generator.RingRadius + _generator.Radius;
