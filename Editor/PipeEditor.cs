@@ -17,6 +17,7 @@ namespace InstantPipes
         private bool _isDragging = false;
         private bool _autoRegenerate = true;
         private bool _lastBuildFailed = false;
+        private bool _settingsFoldoutActive = true;
         private int _editingMode = 0;
 
         private int _selectedPipeIndex = -1;
@@ -44,22 +45,18 @@ namespace InstantPipes
 
         public override void OnInspectorGUI()
         {
-            _editingMode = GUILayout.Toolbar(_editingMode, new string[] { "Settings", "Create", "Edit" });
+            EditorGUILayout.Space(5);
+            _editingMode = GUILayout.Toolbar(_editingMode, new string[] { "Create", "Edit" });
+            EditorGUILayout.Space(5);
+
+            if (_editingMode == 0) PathGUI();
+            if (_editingMode == 1) EditGUI();
 
             EditorGUILayout.Space(5);
 
-            if (_editingMode == 0) SettingsGUI();
-            if (_editingMode == 1) PathGUI();
-            if (_editingMode == 2) EditGUI();
-
-            EditorGUILayout.Space(10);
-
-            if (GUILayout.Button("Erase"))
-            {
-                Undo.RecordObject(_generator, "Erased all Pipes");
-                _generator.Pipes.Clear();
-                _generator.UpdateMesh();
-            }
+            _settingsFoldoutActive = EditorGUILayout.BeginFoldoutHeaderGroup(_settingsFoldoutActive, "Settings");
+            if (_settingsFoldoutActive) SettingsGUI();
+            EditorGUILayout.EndFoldoutHeaderGroup();
         }
 
         private void SettingsGUI()
@@ -180,6 +177,13 @@ namespace InstantPipes
                 Repaint();
             }
             GUI.enabled = true;
+
+            if (GUILayout.Button("Erase Everything"))
+            {
+                Undo.RecordObject(_generator, "Erased all Pipes");
+                _generator.Pipes.Clear();
+                _generator.UpdateMesh();
+            }
         }
 
         private Vector3 DrawVectorField(string label, Vector3 value)
@@ -247,9 +251,9 @@ namespace InstantPipes
 
         private void OnSceneGUI()
         {
-            if (_editingMode == 1)
+            if (_editingMode == 0)
                 HandlePathInput(Event.current);
-            if (_editingMode == 2)
+            if (_editingMode == 1)
                 HandleEdit(Event.current);
         }
 

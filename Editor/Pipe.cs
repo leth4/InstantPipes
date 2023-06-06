@@ -65,7 +65,7 @@ namespace InstantPipes
             GenerateUVs();
             GenerateTriangles();
 
-            if (_generator.IsSeparateRingsSubmesh)
+            if (_generator.IsSeparateRingsSubmesh && (_generator.HasCaps || _generator.HasRings))
             {
                 meshes.Add(new()
                 {

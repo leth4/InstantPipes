@@ -72,7 +72,7 @@ namespace InstantPipes
             }
 
             var materials = new List<Material>();
-            if (IsSeparateRingsSubmesh)
+            if (IsSeparateRingsSubmesh && (HasCaps || HasRings))
             {
                 for (int i = 0; i < Pipes.Count * 2; i++) materials.Add(i % 2 == 0 ? Material : RingMaterial);
             }
@@ -182,7 +182,7 @@ namespace InstantPipes
         {
             var tempCollider = new GameObject();
             tempCollider.transform.position = point + (normal * PathCreator.Height) / 2;
-            tempCollider.transform.localScale = new Vector3(Radius * 2, PathCreator.Height - Radius * 2.1f, Radius * 2);
+            tempCollider.transform.localScale = new Vector3(Radius * 2, PathCreator.Height - Radius * 3f, Radius * 2);
             tempCollider.transform.rotation = Quaternion.FromToRotation(Vector3.up, normal);
             tempCollider.AddComponent<CapsuleCollider>();
             return tempCollider;
