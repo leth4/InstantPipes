@@ -44,14 +44,31 @@ namespace InstantPipes
 
         public override void OnInspectorGUI()
         {
-            EditorGUI.BeginChangeCheck();
+            _editingMode = GUILayout.Toolbar(_editingMode, new string[] { "Settings", "Create", "Edit" });
 
-            GUILayout.Label("Pipes", EditorStyles.boldLabel);
+            EditorGUILayout.Space(5);
+
+            if (_editingMode == 0) SettingsGUI();
+            if (_editingMode == 1) PathGUI();
+            if (_editingMode == 2) EditGUI();
+
+            EditorGUILayout.Space(10);
+
+            if (GUILayout.Button("Erase"))
+            {
+                Undo.RecordObject(_generator, "Erased all Pipes");
+                _generator.Pipes.Clear();
+                _generator.UpdateMesh();
+            }
+        }
+
+        private void SettingsGUI()
+        {
+            EditorGUI.BeginChangeCheck();
             var radius = EditorGUILayout.FloatField("Radius", _generator.Radius);
             var curvature = EditorGUILayout.Slider("Curvature", _generator.Curvature, 0.01f, _generator.MaxCurvature);
             var material = (Material)EditorGUILayout.ObjectField("Material", _generator.Material, typeof(Material), false);
             var ringsUVScale = EditorGUILayout.FloatField("Rings UV Scale", _generator.RingsUVScale);
-            var maxEndCapOffset = Mathf.Min(_generator.PathCreator.Height, _generator.PathCreator.GridSize) - _generator.CapThickness;
             EditorGUILayout.Space(10);
 
             var hasRings = EditorGUILayout.ToggleLeft("Rings", _generator.HasRings, EditorStyles.boldLabel);
@@ -64,8 +81,8 @@ namespace InstantPipes
             }
 
             var hasCaps = EditorGUILayout.ToggleLeft("End Caps", _generator.HasCaps, EditorStyles.boldLabel);
-            float capRadius = _generator.CapRadius, capThickness = _generator.CapThickness;
-            float capOffset = _generator.CapOffset;
+            var maxEndCapOffset = _generator.PathCreator.Height - _generator.CapThickness - _generator.Radius;
+            float capRadius = _generator.CapRadius, capThickness = _generator.CapThickness, capOffset = _generator.CapOffset;
             if (_generator.HasCaps)
             {
                 capRadius = EditorGUILayout.Slider("Radius", _generator.CapRadius, 0, radius);
@@ -77,7 +94,6 @@ namespace InstantPipes
             GUILayout.Label("Quality", EditorStyles.boldLabel);
             var edgeCount = EditorGUILayout.IntSlider("Edges", _generator.EdgeCount, 3, 40);
             var segmentCount = EditorGUILayout.IntSlider("Segments", _generator.CurvedSegmentCount, 1, 40);
-            EditorGUILayout.Space(10);
 
             if (EditorGUI.EndChangeCheck())
             {
@@ -98,28 +114,6 @@ namespace InstantPipes
                 _generator.CurvedSegmentCount = segmentCount;
 
                 _generator.PathCreator.Radius = radius + (hasRings ? ringRadius : 0);
-                _generator.UpdateMesh();
-            }
-
-            _editingMode = GUILayout.Toolbar(_editingMode, new string[] { "Create", "Edit" });
-            EditorGUILayout.Space(10);
-
-            if (_editingMode == 0)
-            {
-                PathGUI();
-            }
-
-            if (_editingMode == 1)
-            {
-                EditGUI();
-            }
-
-            EditorGUILayout.Space(10);
-
-            if (GUILayout.Button("Erase"))
-            {
-                Undo.RecordObject(_generator, "Erased all Pipes");
-                _generator.Pipes.Clear();
                 _generator.UpdateMesh();
             }
         }
@@ -244,9 +238,9 @@ namespace InstantPipes
 
         private void OnSceneGUI()
         {
-            if (_editingMode == 0)
+            if (_editingMode == 1)
                 HandlePathInput(Event.current);
-            else if (_editingMode == 1)
+            if (_editingMode == 2)
                 HandleEdit(Event.current);
         }
 
