@@ -34,8 +34,10 @@ namespace InstantPipes
             return maxDistance;
         }
 
-        public Mesh GenerateMesh(PipeGenerator generator)
+        public List<Mesh> GenerateMeshes(PipeGenerator generator)
         {
+            var meshes = new List<Mesh>();
+
             _generator = generator;
 
             ClearMeshInfo();
@@ -43,9 +45,7 @@ namespace InstantPipes
             var ringPoints = new List<int>();
 
             var direction = (Points[0] - Points[1]).normalized;
-            var rotation = (direction != Vector3.zero)
-                ? Quaternion.LookRotation(direction, Vector3.up)
-                : Quaternion.identity;
+            var rotation = (direction != Vector3.zero) ? Quaternion.LookRotation(direction, Vector3.up) : Quaternion.identity;
             _previousRotation = rotation;
             _bezierPoints.Add(new BezierPoint(Points[0], rotation));
 
@@ -65,6 +65,21 @@ namespace InstantPipes
             GenerateUVs();
             GenerateTriangles();
 
+            if (_generator.IsSeparateRingsSubmesh)
+            {
+                meshes.Add(new()
+                {
+                    vertices = _verts.ToArray(),
+                    normals = _normals.ToArray(),
+                    uv = _uvs.ToArray(),
+                    triangles = _triIndices.ToArray()
+                });
+                _verts = new();
+                _normals = new();
+                _uvs = new();
+                _triIndices = new();
+            }
+
             if (_generator.HasCaps)
             {
                 GenerateDisc(_bezierPoints[^1]);
@@ -77,13 +92,15 @@ namespace InstantPipes
                     GenerateDisc(_bezierPoints[point]);
             }
 
-            Mesh mesh = new Mesh();
-            mesh.SetVertices(_verts);
-            mesh.SetNormals(_normals);
-            mesh.SetUVs(0, _uvs);
-            mesh.SetTriangles(_triIndices, 0);
+            meshes.Add(new()
+            {
+                vertices = _verts.ToArray(),
+                normals = _normals.ToArray(),
+                uv = _uvs.ToArray(),
+                triangles = _triIndices.ToArray()
+            });
 
-            return mesh;
+            return meshes;
         }
 
         private void ClearMeshInfo()

@@ -68,6 +68,13 @@ namespace InstantPipes
             var radius = EditorGUILayout.FloatField("Radius", _generator.Radius);
             var curvature = EditorGUILayout.Slider("Curvature", _generator.Curvature, 0.01f, _generator.MaxCurvature);
             var material = (Material)EditorGUILayout.ObjectField("Material", _generator.Material, typeof(Material), false);
+
+            GUILayout.BeginHorizontal();
+            var isSeparateRingMesh = EditorGUILayout.ToggleLeft("Ring Material", _generator.IsSeparateRingsSubmesh, GUILayout.Width(EditorGUIUtility.labelWidth));
+            EditorGUI.BeginDisabledGroup(!isSeparateRingMesh);
+            var ringMaterial = (Material)EditorGUILayout.ObjectField(_generator.RingMaterial, typeof(Material), false);
+            EditorGUI.EndDisabledGroup();
+            GUILayout.EndHorizontal();
             var ringsUVScale = EditorGUILayout.FloatField("Rings UV Scale", _generator.RingsUVScale);
             EditorGUILayout.Space(10);
 
@@ -100,6 +107,8 @@ namespace InstantPipes
                 Undo.RecordObject(_generator, "Set Field Value");
 
                 _generator.Material = material;
+                _generator.IsSeparateRingsSubmesh = isSeparateRingMesh;
+                _generator.RingMaterial = ringMaterial;
                 _generator.RingsUVScale = Mathf.Max(0.01f, ringsUVScale);
                 _generator.Radius = Mathf.Max(0.01f, radius);
                 _generator.Curvature = Mathf.Clamp(curvature, 0.01f, _generator.MaxCurvature);

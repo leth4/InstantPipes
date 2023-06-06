@@ -26,7 +26,9 @@ namespace InstantPipes
         public int PipesAmount = 1;
 
         public Material Material;
+        public Material RingMaterial;
         public float RingsUVScale = 1;
+        public bool IsSeparateRingsSubmesh = false;
 
         private Renderer _renderer;
         private MeshCollider _collider;
@@ -60,7 +62,8 @@ namespace InstantPipes
             {
                 _mesh.Clear();
 
-                submeshes.Add(new() { mesh = pipe.GenerateMesh(this) });
+                var meshes = pipe.GenerateMeshes(this);
+                meshes.ForEach(mesh => submeshes.Add(new() { mesh = mesh }));
                 _mesh.CombineMeshes(submeshes.ToArray(), false, false);
 
                 _collider.sharedMesh = _mesh;
@@ -68,9 +71,16 @@ namespace InstantPipes
                 _maxDistanceBetweenPoints = Mathf.Max(_maxDistanceBetweenPoints, pipe.GetMaxDistanceBetweenPoints());
             }
 
-            var materialArray = new Material[Pipes.Count];
-            for (int i = 0; i < materialArray.Length; i++) materialArray[i] = Material;
-            _renderer.sharedMaterials = materialArray;
+            var materials = new List<Material>();
+            if (IsSeparateRingsSubmesh)
+            {
+                for (int i = 0; i < Pipes.Count * 2; i++) materials.Add(i % 2 == 0 ? Material : RingMaterial);
+            }
+            else
+            {
+                for (int i = 0; i < Pipes.Count; i++) materials.Add(Material);
+            }
+            _renderer.sharedMaterials = materials.ToArray();
         }
 
         public bool AddPipe(Vector3 startPoint, Vector3 startNormal, Vector3 endPoint, Vector3 endNormal)
@@ -109,7 +119,7 @@ namespace InstantPipes
             {
                 temporaryColliders.ForEach(collider => Object.DestroyImmediate(collider));
             }
-            
+
             return !failed;
         }
 
