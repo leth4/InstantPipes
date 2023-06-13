@@ -1,8 +1,12 @@
 {
     "name": "leth.instantpipes.Editor",
     "rootNamespace": "InstantPipes",
-    "references": [],
-    "includePlatforms": [],
+    "references": [
+        "GUID:507c31c94ab77a54fb5ef52f553b2f5a"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
