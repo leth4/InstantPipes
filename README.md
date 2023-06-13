@@ -64,6 +64,10 @@ Every pipe is a separate submesh, so you can assign separate materials by draggi
 
 ## Troubleshooting
 
+> Getting an error when trying to build
+
+- That was recently patched, so please update the package or download the lastest version of the tool.
+
 > Pipes appear squashed
 
 - Toggle and re-toggle rings, that should fix it. Will hopefully find a proper fix soon.
