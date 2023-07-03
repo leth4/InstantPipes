@@ -14,6 +14,7 @@ namespace InstantPipes
 
         private bool _isDragging = false;
         private bool _autoRegenerate = true;
+        private bool _previewPath = false;
         private bool _lastBuildFailed = false;
         private bool _settingsFoldoutActive = true;
         private int _editingMode = 0;
@@ -204,13 +205,14 @@ namespace InstantPipes
 
         private void PathGUI()
         {
+            _previewPath = EditorGUILayout.Toggle("Preview Path", _previewPath);
             _generator.PipesAmount = EditorGUILayout.IntSlider("Amount", _generator.PipesAmount, 1, 10);
 
             EditorGUI.BeginChangeCheck();
 
             var maxIterations = EditorGUILayout.IntField("Max Iterations", _generator.PathCreator.MaxIterations);
-            var gridRotation = EditorGUILayout.FloatField("Grid Y Angle", _generator.PathCreator.GridRotationY);
             var pathGridSize = EditorGUILayout.FloatField("Grid Size", _generator.PathCreator.GridSize);
+            var gridRotation = EditorGUILayout.FloatField("Grid Y Angle", _generator.PathCreator.GridRotationY);
             var pathHeight = EditorGUILayout.FloatField("Height", _generator.PathCreator.Height);
             var chaos = EditorGUILayout.Slider("Chaos", _generator.PathCreator.Chaos, 0, 100);
             var straightPriority = EditorGUILayout.Slider("Straight Proirity", _generator.PathCreator.StraightPathPriority, 0, 100);
@@ -342,8 +344,17 @@ namespace InstantPipes
             {
                 bool canStartAtPoint = !Physics.SphereCast(new Ray(_startDragPoint, _startDragNormal), _generator.PathCreator.Radius, _generator.PathCreator.Height);
                 bool canEndAtPoint = !Physics.SphereCast(new Ray(mouseHit.point, mouseHit.normal), _generator.PathCreator.Radius, _generator.PathCreator.Height);
-                Handles.color = (canStartAtPoint && canEndAtPoint) ? Color.white : Color.red;
-                Handles.DrawDottedLine(_startDragPoint, mouseHit.point, 4);
+                Handles.color = (canStartAtPoint && canEndAtPoint) ? Color.blue : Color.red;
+
+                if (_previewPath)
+                {
+                    var points = _generator.PathCreator.Create(_startDragPoint, _startDragNormal, mouseHit.point, mouseHit.normal);
+                    for (int i = 1; i < points.Count; i++) Handles.DrawLine(points[i], points[i - 1], 10);
+                }
+                else
+                {
+                    Handles.DrawLine(_startDragPoint, mouseHit.point, 2);
+                }
             }
 
             if (evt.type == EventType.Layout)

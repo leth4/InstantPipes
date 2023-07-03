@@ -51,6 +51,7 @@ namespace InstantPipes
             var toSearch = new List<Point> { start };
             var visited = new List<Vector3>();
             var priorityFactor = start.GetDistanceTo(target) / 100;
+            Random.InitState((int)(Chaos * 100));
 
             Dictionary<Vector3, Point> pointDictionary = new();
 

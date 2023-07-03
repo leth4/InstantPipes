@@ -39,6 +39,7 @@ The tool uses A* pathfinding without a predefined grid — by raycasting from a
 
 Property | Explanation
 :- | :-
+Preview Path | Will preview how the pipe will look like while dragging. Can be slow with complex pipes!
 Amount | How many pipes will be created at once; each one will have an individual path.
 Max Iterations | How many points will the algorithm check before giving up.
 Grid Y Angle | Rotates the Y axis of the pathfinding grid that every pipes have to follow.
@@ -66,7 +67,7 @@ Every pipe is a separate submesh, so you can assign separate materials by draggi
 
 > Getting an error when trying to build
 
-- That was recently patched, so please update the package or download the lastest version of the tool.
+- That was recently patched, so please update the package or download the latest version of the tool.
 
 > Pipes appear squashed
 
