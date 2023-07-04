@@ -11,7 +11,7 @@ Unity 2021.3 or higher.
 ## Installation
 
 Add the package to your project via the [Package Manager](https://docs.unity3d.com/Manual/upm-ui.html) using the Git URL
-`https://github.com/letharqic/InstantPipes.git`. You can also clone the repository and point the Package Manager to your local copy.
+`https://github.com/leth4/InstantPipes.git`. You can also clone the repository and point the Package Manager to your local copy.
 
 ## Usage
 

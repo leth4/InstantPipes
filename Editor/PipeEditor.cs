@@ -9,15 +9,15 @@ namespace InstantPipes
     {
         private PipeGenerator _generator;
 
+        private static bool _autoRegenerate = true;
+        private static bool _previewPath = false;
+        private static bool _settingsFoldoutActive = true;
+        private static int _editingMode = 0;
+
         private Vector3 _startDragPoint;
         private Vector3 _startDragNormal;
-
         private bool _isDragging = false;
-        private bool _autoRegenerate = true;
-        private bool _previewPath = false;
         private bool _lastBuildFailed = false;
-        private bool _settingsFoldoutActive = true;
-        private int _editingMode = 0;
 
         private int _selectedPipeIndex = -1;
         private List<int> _selectedPointsIndexes = new();
@@ -348,8 +348,17 @@ namespace InstantPipes
 
                 if (_previewPath)
                 {
-                    var points = _generator.PathCreator.Create(_startDragPoint, _startDragNormal, mouseHit.point, mouseHit.normal);
-                    for (int i = 1; i < points.Count; i++) Handles.DrawLine(points[i], points[i - 1], 10);
+                    var vectorLength = _generator.PipesAmount * _generator.Radius + (_generator.PipesAmount - 1) * _generator.PathCreator.GridSize;
+                    var startVector = Vector3.Cross(_startDragNormal, mouseHit.point - _startDragPoint).normalized * vectorLength;
+                    var endVector = Vector3.Cross(mouseHit.normal, mouseHit.point - _startDragPoint).normalized * vectorLength;
+                    var stepSize = startVector.magnitude / (_generator.PipesAmount);
+                    for (int i = 0; i < _generator.PipesAmount; i++)
+                    {
+                        var start = startVector.normalized * (stepSize * (i - _generator.PipesAmount / 2f + 0.5f));
+                        var end = endVector.normalized * (stepSize * (i - _generator.PipesAmount / 2f + 0.5f));
+                        var points = _generator.PathCreator.Create(_startDragPoint + start, _startDragNormal, mouseHit.point + end, mouseHit.normal);
+                        for (int j = 1; j < points.Count; j++) Handles.DrawLine(points[j], points[j - 1], 10);
+                    }
                 }
                 else
                 {
