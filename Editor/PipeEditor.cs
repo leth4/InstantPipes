@@ -44,6 +44,18 @@ namespace InstantPipes
 
         public override void OnInspectorGUI()
         {
+            if (_generator.transform.position != Vector3.zero)
+            {
+                EditorGUILayout.Space(5);
+                EditorGUILayout.HelpBox("The Generator position should be set to (0,0,0)!", MessageType.Warning);
+                var buttonRect = GUILayoutUtility.GetLastRect();
+                buttonRect.x = buttonRect.width + buttonRect.x - 37;
+                buttonRect.width = 30;
+                buttonRect.y = buttonRect.y + 7;
+                buttonRect.height = 24;
+                if (GUI.Button(buttonRect, "Fix")) _generator.transform.position = Vector3.zero;
+            }
+
             EditorGUILayout.Space(5);
             _editingMode = GUILayout.Toolbar(_editingMode, new string[] { "Create", "Edit" });
             EditorGUILayout.Space(5);
@@ -323,7 +335,7 @@ namespace InstantPipes
                     _generator.UpdateMesh();
                 }
 
-                if (evt.keyCode == KeyCode.A && !evt.control)
+                if (evt.keyCode == KeyCode.A && !evt.control && Tools.viewTool != ViewTool.FPS)
                 {
                     _selectedPointsIndexes.Clear();
                     for (int i = 0; i < _generator.Pipes[_selectedPipeIndex].Points.Count; i++)

@@ -231,6 +231,7 @@ namespace InstantPipes
             for (int s = 0; s < _bezierPoints.Count - 1; s++)
             {
                 if (isExtruded && s % (_generator.CurvedSegmentCount + 1) == 0) continue;
+                if (!isExtruded && _generator.HasRings && _generator.HasExtrusion && s % (_generator.CurvedSegmentCount + 1) != 0) continue;
 
                 int rootIndex = s * edges;
                 int rootIndexNext = (s + 1) * edges;
