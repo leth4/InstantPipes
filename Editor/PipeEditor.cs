@@ -232,8 +232,8 @@ namespace InstantPipes
             var gridRotation = EditorGUILayout.FloatField("Grid Y Angle", _generator.PathCreator.GridRotationY);
             var pathHeight = EditorGUILayout.FloatField("Height", _generator.PathCreator.Height);
             var chaos = EditorGUILayout.Slider("Chaos", _generator.PathCreator.Chaos, 0, 100);
-            var straightPriority = EditorGUILayout.Slider("Straight Proirity", _generator.PathCreator.StraightPathPriority, 0, 100);
-            var nearObstaclePriority = EditorGUILayout.Slider("Near Obstacle Proirity", _generator.PathCreator.NearObstaclesPriority, 0, 100);
+            var straightPriority = EditorGUILayout.Slider("Straight Priority", _generator.PathCreator.StraightPathPriority, 0, 100);
+            var nearObstaclePriority = EditorGUILayout.Slider("Near Obstacle Priority", _generator.PathCreator.NearObstaclesPriority, 0, 100);
 
             if (EditorGUI.EndChangeCheck())
             {
