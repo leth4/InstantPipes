@@ -66,8 +66,8 @@ namespace InstantPipes
             var material = (Material)EditorGUILayout.ObjectField("Material", _generator.Material, typeof(Material), false);
 
             GUILayout.BeginHorizontal();
-            var isSeparateRingMesh = EditorGUILayout.ToggleLeft("Ring Material", _generator.IsSeparateRingsSubmesh, GUILayout.Width(EditorGUIUtility.labelWidth));
-            EditorGUI.BeginDisabledGroup(!isSeparateRingMesh);
+            var isSeparateRingsMaterial = EditorGUILayout.ToggleLeft("Ring Material", _generator.IsSeparateRingsMaterial, GUILayout.Width(EditorGUIUtility.labelWidth));
+            EditorGUI.BeginDisabledGroup(!isSeparateRingsMaterial);
             var ringMaterial = (Material)EditorGUILayout.ObjectField(_generator.RingMaterial, typeof(Material), false);
             EditorGUI.EndDisabledGroup();
             GUILayout.EndHorizontal();
@@ -76,10 +76,14 @@ namespace InstantPipes
 
             var hasRings = EditorGUILayout.ToggleLeft("Rings", _generator.HasRings, EditorStyles.boldLabel);
             float ringRadius = _generator.RingRadius, ringThickness = _generator.RingThickness;
+            bool hasExtrusion = _generator.HasExtrusion;
             if (_generator.HasRings)
             {
+                hasExtrusion = EditorGUILayout.Toggle("Extrusion", _generator.HasExtrusion);
                 ringRadius = EditorGUILayout.Slider("Radius", _generator.RingRadius, 0, radius);
+                EditorGUI.BeginDisabledGroup(hasExtrusion);
                 ringThickness = EditorGUILayout.Slider("Thickness", _generator.RingThickness, 0, radius);
+                EditorGUI.EndDisabledGroup();
                 EditorGUILayout.Space(10);
             }
 
@@ -103,12 +107,13 @@ namespace InstantPipes
                 Undo.RecordObject(_generator, "Set Field Value");
 
                 _generator.Material = material;
-                _generator.IsSeparateRingsSubmesh = isSeparateRingMesh;
+                _generator.IsSeparateRingsMaterial = isSeparateRingsMaterial;
                 _generator.RingMaterial = ringMaterial;
                 _generator.RingsUVScale = Mathf.Max(0.01f, ringsUVScale);
                 _generator.Radius = Mathf.Max(0.01f, radius);
                 _generator.Curvature = Mathf.Clamp(curvature, 0.01f, _generator.MaxCurvature);
                 _generator.HasRings = hasRings;
+                _generator.HasExtrusion = hasExtrusion;
                 _generator.RingRadius = Mathf.Clamp(ringRadius, 0, radius);
                 _generator.RingThickness = Mathf.Clamp(ringThickness, 0, radius);
                 _generator.HasCaps = hasCaps;

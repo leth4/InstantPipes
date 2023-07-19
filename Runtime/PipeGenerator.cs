@@ -15,6 +15,7 @@ namespace InstantPipes
         public float Curvature = 0.5f;
 
         public bool HasRings;
+        public bool HasExtrusion;
         public float RingThickness = 1;
         public float RingRadius = 1.3f;
 
@@ -28,7 +29,7 @@ namespace InstantPipes
         public Material Material;
         public Material RingMaterial;
         public float RingsUVScale = 1;
-        public bool IsSeparateRingsSubmesh = false;
+        public bool IsSeparateRingsMaterial = false;
 
         private Renderer _renderer;
         private MeshCollider _collider;
@@ -72,9 +73,13 @@ namespace InstantPipes
             }
 
             var materials = new List<Material>();
-            if (IsSeparateRingsSubmesh && (HasCaps || HasRings))
+            if (IsSeparateRingsMaterial && (HasCaps || HasRings))
             {
                 for (int i = 0; i < Pipes.Count * 2; i++) materials.Add(i % 2 == 0 ? Material : RingMaterial);
+            }
+            else if (HasCaps || HasRings)
+            {
+                for (int i = 0; i < Pipes.Count * 2; i++) materials.Add(Material);
             }
             else
             {

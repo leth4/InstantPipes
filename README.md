@@ -30,6 +30,7 @@ Ctrl+Z works with all actions. When you're commited to the pipes, you can just r
 - `Curvature` changes the length of the curved parts, making pipes appear more or less curvy. Note that it applies after pathfinding, so in some cases high curvature value can make pipes intersect.
 - `Edges` property selects how many edges the pipes will have, and `Segments` is the amount of subdivisions in curved parts. 
 - You can toggle `Rings` and `End Caps` and separately set up their radius and thickness.
+- Additionally, you can toggle `Extrusion` under the `Rings` label, replacing rings with extruded curved elements, like on plastic pipes. 
 
 ### Using pathfinding
 

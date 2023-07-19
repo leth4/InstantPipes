@@ -14,10 +14,13 @@ namespace InstantPipes
         private List<Vector2> _uvs;
         private List<int> _triIndices;
         private List<BezierPoint> _bezierPoints;
+        private List<PlaneInfo> _planes;
         private PipeGenerator _generator;
 
         private float _currentAngleOffset;
         private Quaternion _previousRotation;
+
+        private float _ringThickness => _generator.HasExtrusion ? 0 : _generator.RingThickness;
 
         public Pipe(List<Vector3> points)
         {
@@ -65,19 +68,37 @@ namespace InstantPipes
             GenerateUVs();
             GenerateTriangles();
 
-            if (_generator.IsSeparateRingsSubmesh && (_generator.HasCaps || _generator.HasRings))
+            meshes.Add(new()
             {
-                meshes.Add(new()
+                vertices = _verts.ToArray(),
+                normals = _normals.ToArray(),
+                uv = _uvs.ToArray(),
+                triangles = _triIndices.ToArray()
+            });
+            _verts = new();
+            _normals = new();
+            _uvs = new();
+            _triIndices = new();
+
+            if (_generator.HasRings)
+            {
+                if (_generator.HasExtrusion)
                 {
-                    vertices = _verts.ToArray(),
-                    normals = _normals.ToArray(),
-                    uv = _uvs.ToArray(),
-                    triangles = _triIndices.ToArray()
-                });
-                _verts = new();
-                _normals = new();
-                _uvs = new();
-                _triIndices = new();
+                    GenerateVertices(isExtruded: true);
+                    GenerateUVs();
+                    GenerateTriangles(isExtruded: true);
+
+                    for (int i = 1; i < _bezierPoints.Count - 1; i += _generator.CurvedSegmentCount + 1)
+                    {
+                        _planes.Add(new PlaneInfo(_bezierPoints[i], _generator.RingRadius + _generator.Radius, false));
+                        if (i + _generator.CurvedSegmentCount >= _bezierPoints.Count) break;
+                        _planes.Add(new PlaneInfo(_bezierPoints[i + _generator.CurvedSegmentCount], _generator.RingRadius + _generator.Radius, true));
+                    }
+                }
+                else
+                {
+                    foreach (var point in ringPoints) GenerateDisc(_bezierPoints[point]);
+                }
             }
 
             if (_generator.HasCaps)
@@ -86,11 +107,7 @@ namespace InstantPipes
                 GenerateDisc(_bezierPoints[0]);
             }
 
-            if (_generator.HasRings)
-            {
-                foreach (var point in ringPoints)
-                    GenerateDisc(_bezierPoints[point]);
-            }
+            foreach (var plane in _planes) GeneratePlane(plane);
 
             meshes.Add(new()
             {
@@ -110,36 +127,37 @@ namespace InstantPipes
             _uvs = new List<Vector2>();
             _triIndices = new List<int>();
             _bezierPoints = new List<BezierPoint>();
+            _planes = new List<PlaneInfo>();
         }
 
         private BezierPoint GetBezierPoint(float t, int x)
         {
             Vector3 prev, next;
 
-            if ((Points[x] - Points[x - 1]).magnitude > _generator.Curvature * 2 + _generator.RingThickness)
+            if ((Points[x] - Points[x - 1]).magnitude > _generator.Curvature * 2 + _ringThickness)
                 prev = Points[x] - (Points[x] - Points[x - 1]).normalized * _generator.Curvature;
             else
-                prev = (Points[x] + Points[x - 1]) / 2 + (Points[x] - Points[x - 1]).normalized * _generator.RingThickness / 2;
+                prev = (Points[x] + Points[x - 1]) / 2 + (Points[x] - Points[x - 1]).normalized * _ringThickness / 2;
 
-            if ((Points[x] - Points[x + 1]).magnitude > _generator.Curvature * 2 + _generator.RingThickness)
+            if ((Points[x] - Points[x + 1]).magnitude > _generator.Curvature * 2 + _ringThickness)
                 next = Points[x] - (Points[x] - Points[x + 1]).normalized * _generator.Curvature;
             else
-                next = (Points[x] + Points[x + 1]) / 2 + (Points[x] - Points[x + 1]).normalized * _generator.RingThickness / 2;
+                next = (Points[x] + Points[x + 1]) / 2 + (Points[x] - Points[x + 1]).normalized * _ringThickness / 2;
 
             if (x == 1)
             {
-                if ((Points[x] - Points[x - 1]).magnitude > _generator.Curvature + _generator.RingThickness * 2.5f)
+                if ((Points[x] - Points[x - 1]).magnitude > _generator.Curvature + _ringThickness * 2.5f)
                     prev = Points[x] - (Points[x] - Points[x - 1]).normalized * _generator.Curvature;
                 else
-                    prev = Points[x - 1] + (Points[x] - Points[x - 1]).normalized * _generator.RingThickness * 2.5f;
+                    prev = Points[x - 1] + (Points[x] - Points[x - 1]).normalized * _ringThickness * 2.5f;
             }
 
             else if (x == Points.Count - 2)
             {
-                if ((Points[x] - Points[x + 1]).magnitude > _generator.Curvature + _generator.RingThickness * 2.5f)
+                if ((Points[x] - Points[x + 1]).magnitude > _generator.Curvature + _ringThickness * 2.5f)
                     next = Points[x] - (Points[x] - Points[x + 1]).normalized * _generator.Curvature;
                 else
-                    next = Points[x + 1] + (Points[x] - Points[x + 1]).normalized * _generator.RingThickness * 2.5f;
+                    next = Points[x + 1] + (Points[x] - Points[x + 1]).normalized * _ringThickness * 2.5f;
             }
 
             Vector3 a = Vector3.Lerp(prev, Points[x], t);
@@ -187,7 +205,7 @@ namespace InstantPipes
             }
         }
 
-        private void GenerateVertices()
+        private void GenerateVertices(bool isExtruded = false)
         {
             for (int point = 0; point < _bezierPoints.Count; point++)
             {
@@ -197,7 +215,7 @@ namespace InstantPipes
                     float angRad = t * 6.2831853f;
                     Vector3 direction = new Vector3(MathF.Sin(angRad), Mathf.Cos(angRad), 0);
                     _normals.Add(_bezierPoints[point].LocalToWorldVector(direction.normalized));
-                    _verts.Add(_bezierPoints[point].LocalToWorldPosition(direction * _generator.Radius));
+                    _verts.Add(_bezierPoints[point].LocalToWorldPosition(direction * (isExtruded ? _generator.RingRadius + _generator.Radius : _generator.Radius)));
                 }
 
                 // Extra vertice to fix smoothed UVs
@@ -207,11 +225,13 @@ namespace InstantPipes
             }
         }
 
-        private void GenerateTriangles()
+        private void GenerateTriangles(bool isExtruded = false)
         {
             var edges = _generator.EdgeCount + 1;
             for (int s = 0; s < _bezierPoints.Count - 1; s++)
             {
+                if (isExtruded && s % (_generator.CurvedSegmentCount + 1) == 0) continue;
+
                 int rootIndex = s * edges;
                 int rootIndexNext = (s + 1) * edges;
                 for (int i = 0; i < edges; i++)
@@ -237,17 +257,15 @@ namespace InstantPipes
             bool isFirst = (point.Pos == _bezierPoints[0].Pos);
             bool isLast = (point.Pos == _bezierPoints[^1].Pos);
 
-            List<Vector2> planeUVs = new List<Vector2>();
-
             if (isFirst)
                 point.Pos -= point.LocalToWorldVector(Vector3.forward) * (_generator.CapThickness + _generator.CapOffset);
             else if (isLast)
                 point.Pos += point.LocalToWorldVector(Vector3.forward) * _generator.CapOffset;
             else
-                point.Pos -= point.LocalToWorldVector(Vector3.forward) * _generator.RingThickness / 2;
+                point.Pos -= point.LocalToWorldVector(Vector3.forward) * _ringThickness / 2;
 
             var radius = (isLast || isFirst) ? _generator.CapRadius + _generator.Radius : _generator.RingRadius + _generator.Radius;
-            var uv = (isLast || isFirst) ? _generator.CapThickness : _generator.RingThickness;
+            var uv = (isLast || isFirst) ? _generator.CapThickness : _ringThickness;
 
             for (int p = 0; p < 2; p++)
             {
@@ -259,17 +277,19 @@ namespace InstantPipes
                     _normals.Add(point.LocalToWorldVector(direction.normalized));
                     _verts.Add(point.LocalToWorldPosition(direction * radius));
                     _uvs.Add(new Vector2(t, uv * p));
-                    planeUVs.Add(direction);
                 }
 
                 _normals.Add(_normals[^_generator.EdgeCount]);
                 _verts.Add(_verts[^_generator.EdgeCount]);
                 _uvs.Add(new Vector2(1, uv * p));
-                planeUVs.Add(planeUVs[^1]);
+
+                _planes.Add(new PlaneInfo(point, radius, p == 0));
+
                 if (isLast || isFirst)
                     point.Pos += point.LocalToWorldVector(Vector3.forward) * _generator.CapThickness;
                 else
-                    point.Pos += point.LocalToWorldVector(Vector3.forward) * _generator.RingThickness;
+                    point.Pos += point.LocalToWorldVector(Vector3.forward) * _ringThickness;
+
             }
 
             var edges = _generator.EdgeCount + 1;
@@ -283,27 +303,51 @@ namespace InstantPipes
                 _triIndices.Add(edges + (i + 1) % edges + rootIndex);
                 _triIndices.Add((i + 1) % edges + rootIndex);
             }
+        }
 
-            rootIndex = _verts.Count;
+        private void GeneratePlane(PlaneInfo plane)
+        {
+            var edges = _generator.EdgeCount + 1;
+            var rootIndex = _verts.Count;
 
-            for (int i = 0; i < planeUVs.Count; i++)
+            var planePointVectors = new List<Vector3>();
+
+            for (int p = 0; p < 2; p++)
             {
-                _verts.Add(_verts[^(planeUVs.Count)]);
+                for (int i = 0; i < _generator.EdgeCount; i++)
+                {
+                    float t = i / (float)_generator.EdgeCount;
+                    float angRad = t * 6.2831853f;
+                    Vector3 direction = new Vector3(MathF.Sin(angRad), Mathf.Cos(angRad), 0);
+                    planePointVectors.Add(direction);
+                }
+                planePointVectors.Add(planePointVectors[^1]);
+            }
+
+            for (int i = 0; i < planePointVectors.Count; i++)
+            {
+                _verts.Add(plane.Point.LocalToWorldPosition(planePointVectors[i] * plane.Radius));
                 if (i > _generator.EdgeCount)
-                    _normals.Add(point.LocalToWorldVector(Vector3.forward));
+                    _normals.Add(plane.Point.LocalToWorldVector(Vector3.forward));
                 else
-                    _normals.Add(point.LocalToWorldVector(Vector3.back));
-                _uvs.Add(planeUVs[i] * _generator.RingsUVScale);
+                    _normals.Add(plane.Point.LocalToWorldVector(Vector3.back));
+                _uvs.Add(planePointVectors[i] * _generator.RingsUVScale);
             }
 
             for (int i = 1; i < edges - 1; i++)
             {
-                _triIndices.Add(0 + rootIndex);
-                _triIndices.Add(i + rootIndex);
-                _triIndices.Add(i + 1 + rootIndex);
-                _triIndices.Add(edges + i + 1 + rootIndex);
-                _triIndices.Add(edges + i + rootIndex);
-                _triIndices.Add(edges + rootIndex);
+                if (plane.IsForward)
+                {
+                    _triIndices.Add(0 + rootIndex);
+                    _triIndices.Add(i + rootIndex);
+                    _triIndices.Add(i + 1 + rootIndex);
+                }
+                else
+                {
+                    _triIndices.Add(edges + i + 1 + rootIndex);
+                    _triIndices.Add(edges + i + rootIndex);
+                    _triIndices.Add(edges + rootIndex);
+                }
             }
         }
 
@@ -320,6 +364,20 @@ namespace InstantPipes
 
             public Vector3 LocalToWorldPosition(Vector3 localSpacePos) => Rot * localSpacePos + Pos;
             public Vector3 LocalToWorldVector(Vector3 localSpacePos) => Rot * localSpacePos;
+        }
+
+        private struct PlaneInfo
+        {
+            public BezierPoint Point;
+            public float Radius;
+            public bool IsForward;
+
+            public PlaneInfo(BezierPoint point, float radius, bool isForward)
+            {
+                this.Point = point;
+                this.Radius = radius;
+                this.IsForward = isForward;
+            }
         }
     }
 }
