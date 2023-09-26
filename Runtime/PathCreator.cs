@@ -24,7 +24,7 @@ namespace InstantPipes
             var pathEnd = endPosition + endNormal.normalized * Height;
             var baseDirection = (pathEnd - pathStart).normalized;
 
-            var pathPoints = FindPath(new(pathStart), new(pathEnd), startNormal.normalized);
+            var pathPoints = FindPath(new Point(pathStart), new Point(pathEnd), startNormal.normalized);
 
             path.Add(startPosition);
             path.Add(pathStart);
@@ -53,7 +53,7 @@ namespace InstantPipes
             var priorityFactor = start.GetDistanceTo(target) / 100;
             Random.InitState((int)(Chaos * 100));
 
-            Dictionary<Vector3, Point> pointDictionary = new();
+            Dictionary<Vector3, Point> pointDictionary = new Dictionary<Vector3, Point>();
 
             int iterations = 0;
             while (toSearch.Count > 0 && iterations < MaxIterations)
@@ -73,7 +73,7 @@ namespace InstantPipes
                     var path = new List<Point>();
                     while (currentPathPoint != start)
                     {
-                        if (path.Count == 0 || !AreOnSameLine(path[^1].Position, currentPathPoint.Position, currentPathPoint.Connection.Position))
+                        if (path.Count == 0 || !AreOnSameLine(path[path.Count - 1].Position, currentPathPoint.Position, currentPathPoint.Connection.Position))
                         {
                             path.Add(currentPathPoint);
                         }
@@ -158,7 +158,7 @@ namespace InstantPipes
             public Point(Vector3 position)
             {
                 Position = position;
-                Neighbors = new();
+                Neighbors = new List<Point>();
             }
 
             public float GetDistanceTo(Point other)
