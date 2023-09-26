@@ -375,12 +375,23 @@ namespace InstantPipes
                         var start = startVector.normalized * (stepSize * (i - _generator.PipesAmount / 2f + 0.5f));
                         var end = endVector.normalized * (stepSize * (i - _generator.PipesAmount / 2f + 0.5f));
                         var points = _generator.PathCreator.Create(_startDragPoint + start, _startDragNormal, mouseHit.point + end, mouseHit.normal);
-                        for (int j = 1; j < points.Count; j++) Handles.DrawLine(points[j], points[j - 1]);
+                        for (int j = 1; j < points.Count; j++)
+                        {
+                            #if UNITY_2021_3_OR_NEWER
+                            Handles.DrawLine(points[j], points[j - 1], 10);
+                            #else
+                            Handles.DrawLine(points[j], points[j - 1]);
+                            #endif
+                        }
                     }
                 }
                 else
                 {
+                    #if UNITY_2021_3_OR_NEWER
+                    Handles.DrawLine(_startDragPoint, mouseHit.point, 2);
+                    #else
                     Handles.DrawLine(_startDragPoint, mouseHit.point);
+                    #endif
                 }
             }
 
