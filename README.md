@@ -6,7 +6,7 @@ An editor tool for procedurally generating pipes by just dragging the cursor fro
 
 ## Compatibility
 
-Unity 2021.3 or higher.
+Unity 2019.4 or higher.
 
 ## Installation
 
