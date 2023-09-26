@@ -35,8 +35,8 @@ namespace InstantPipes
         private MeshCollider _collider;
         private Mesh _mesh;
 
-        public List<Pipe> Pipes = new();
-        public PathCreator PathCreator = new();
+        public List<Pipe> Pipes = new List<Pipe>();
+        public PathCreator PathCreator = new PathCreator();
 
         private float _maxDistanceBetweenPoints;
         public float MaxCurvature => _maxDistanceBetweenPoints / 2;
@@ -64,7 +64,7 @@ namespace InstantPipes
                 _mesh.Clear();
 
                 var meshes = pipe.GenerateMeshes(this);
-                meshes.ForEach(mesh => submeshes.Add(new() { mesh = mesh }));
+                meshes.ForEach(mesh => submeshes.Add(new CombineInstance { mesh = mesh }));
                 _mesh.CombineMeshes(submeshes.ToArray(), false, false);
 
                 _collider.sharedMesh = _mesh;
@@ -154,7 +154,7 @@ namespace InstantPipes
         public bool RegeneratePaths()
         {
             var pipesCopy = new List<Pipe>(Pipes);
-            Pipes = new();
+            Pipes = new List<Pipe>();
             UpdateMesh();
             var failed = false;
 
@@ -163,14 +163,14 @@ namespace InstantPipes
             foreach (var pipe in pipesCopy)
             {
                 temporaryColliders.Add(CreateTemporaryCollider(pipe.Points[0], (pipe.Points[1] - pipe.Points[0]).normalized));
-                temporaryColliders.Add(CreateTemporaryCollider(pipe.Points[^1], (pipe.Points[^2] - pipe.Points[^1]).normalized));
+                temporaryColliders.Add(CreateTemporaryCollider(pipe.Points[pipe.Points.Count - 1], (pipe.Points[pipe.Points.Count - 2] - pipe.Points[pipe.Points.Count - 1]).normalized));
             }
 
             try
             {
                 foreach (var pipe in pipesCopy)
                 {
-                    Pipes.Add(new Pipe(PathCreator.Create(pipe.Points[0], pipe.Points[1] - pipe.Points[0], pipe.Points[^1], pipe.Points[^2] - pipe.Points[^1])));
+                    Pipes.Add(new Pipe(PathCreator.Create(pipe.Points[0], pipe.Points[1] - pipe.Points[0], pipe.Points[pipe.Points.Count - 1], pipe.Points[pipe.Points.Count - 2] - pipe.Points[pipe.Points.Count - 1])));
                     if (!PathCreator.LastPathSuccess) failed = true;
                     UpdateMesh();
                 }

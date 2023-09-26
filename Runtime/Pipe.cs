@@ -62,23 +62,23 @@ namespace InstantPipes
                 }
             }
 
-            _bezierPoints.Add(new BezierPoint(Points[^1], _previousRotation));
+            _bezierPoints.Add(new BezierPoint(Points[Points.Count - 1], _previousRotation));
 
             GenerateVertices();
             GenerateUVs();
             GenerateTriangles();
 
-            meshes.Add(new()
+            meshes.Add(new Mesh
             {
                 vertices = _verts.ToArray(),
                 normals = _normals.ToArray(),
                 uv = _uvs.ToArray(),
                 triangles = _triIndices.ToArray()
             });
-            _verts = new();
-            _normals = new();
-            _uvs = new();
-            _triIndices = new();
+            _verts = new List<Vector3>();
+            _normals = new List<Vector3>();
+            _uvs = new List<Vector2>();
+            _triIndices = new List<int>();
 
             if (_generator.HasRings)
             {
@@ -103,13 +103,13 @@ namespace InstantPipes
 
             if (_generator.HasCaps)
             {
-                GenerateDisc(_bezierPoints[^1]);
+                GenerateDisc(_bezierPoints[_bezierPoints.Count - 1]);
                 GenerateDisc(_bezierPoints[0]);
             }
 
             foreach (var plane in _planes) GeneratePlane(plane);
 
-            meshes.Add(new()
+            meshes.Add(new Mesh
             {
                 vertices = _verts.ToArray(),
                 normals = _normals.ToArray(),
@@ -213,15 +213,15 @@ namespace InstantPipes
                 {
                     float t = i / (float)_generator.EdgeCount;
                     float angRad = t * 6.2831853f;
-                    Vector3 direction = new Vector3(MathF.Sin(angRad), Mathf.Cos(angRad), 0);
+                    Vector3 direction = new Vector3(Mathf.Sin(angRad), Mathf.Cos(angRad), 0);
                     _normals.Add(_bezierPoints[point].LocalToWorldVector(direction.normalized));
                     _verts.Add(_bezierPoints[point].LocalToWorldPosition(direction * (isExtruded ? _generator.RingRadius + _generator.Radius : _generator.Radius)));
                 }
 
                 // Extra vertice to fix smoothed UVs
 
-                _normals.Add(_normals[^_generator.EdgeCount]);
-                _verts.Add(_verts[^_generator.EdgeCount]);
+                _normals.Add(_normals[_normals.Count - _generator.EdgeCount]);
+                _verts.Add(_verts[_verts.Count - _generator.EdgeCount]);
             }
         }
 
@@ -256,7 +256,7 @@ namespace InstantPipes
         {
             var rootIndex = _verts.Count;
             bool isFirst = (point.Pos == _bezierPoints[0].Pos);
-            bool isLast = (point.Pos == _bezierPoints[^1].Pos);
+            bool isLast = (point.Pos == _bezierPoints[_bezierPoints.Count - 1].Pos);
 
             if (isFirst)
                 point.Pos -= point.LocalToWorldVector(Vector3.forward) * (_generator.CapThickness + _generator.CapOffset);
@@ -274,14 +274,14 @@ namespace InstantPipes
                 {
                     float t = i / (float)_generator.EdgeCount;
                     float angRad = t * 6.2831853f;
-                    Vector3 direction = new Vector3(MathF.Sin(angRad), Mathf.Cos(angRad), 0);
+                    Vector3 direction = new Vector3(Mathf.Sin(angRad), Mathf.Cos(angRad), 0);
                     _normals.Add(point.LocalToWorldVector(direction.normalized));
                     _verts.Add(point.LocalToWorldPosition(direction * radius));
                     _uvs.Add(new Vector2(t, uv * p));
                 }
 
-                _normals.Add(_normals[^_generator.EdgeCount]);
-                _verts.Add(_verts[^_generator.EdgeCount]);
+                _normals.Add(_normals[_normals.Count - _generator.EdgeCount]);
+                _verts.Add(_verts[_verts.Count - _generator.EdgeCount]);
                 _uvs.Add(new Vector2(1, uv * p));
 
                 _planes.Add(new PlaneInfo(point, radius, p == 0));
@@ -319,10 +319,10 @@ namespace InstantPipes
                 {
                     float t = i / (float)_generator.EdgeCount;
                     float angRad = t * 6.2831853f;
-                    Vector3 direction = new Vector3(MathF.Sin(angRad), Mathf.Cos(angRad), 0);
+                    Vector3 direction = new Vector3(Mathf.Sin(angRad), Mathf.Cos(angRad), 0);
                     planePointVectors.Add(direction);
                 }
-                planePointVectors.Add(planePointVectors[^1]);
+                planePointVectors.Add(planePointVectors[planePointVectors.Count - 1]);
             }
 
             for (int i = 0; i < planePointVectors.Count; i++)
